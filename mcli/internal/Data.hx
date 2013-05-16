@@ -17,7 +17,7 @@ enum Kind
 	VarHash(key:Type, value:Type, ?valueIsArray:Bool);
 	Var(t:Type);
 	//function
-	Function(args:Array<Type>, ?varArgs:Null<Type>);
+	Function(args:Array<{name:String, opt:Bool, t:Type}>, ?varArgs:Null<Type>);
 	SubDispatch;
 }
 

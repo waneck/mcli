@@ -167,7 +167,7 @@ class Macro
 									args.push(last);
 							}
 						}
-						Function(args.map(function(a) return convertType(a.t, f.pos)), varArg);
+						Function(args.map(function(a) return { name: a.name, opt: a.opt, t: convertType(a.t, f.pos) }), varArg);
 					default:
 						Var( convertType(type, f.pos) );
 				};

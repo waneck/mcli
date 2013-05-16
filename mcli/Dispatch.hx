@@ -8,11 +8,23 @@ class Dispatch
 {
 	public static function argToString(arg:Argument, argSize=30, screenSize=80)
 	{
-		var prefix = switch(arg.kind)
+		var postfix = "", prefix = "-";
+		switch(arg.kind)
 		{
-			case SubDispatch: "";
-			default: "-";
-		};
+			case SubDispatch, Message:
+				prefix = "";
+			case VarHash(_,_,_):
+				postfix = " key[=value]";
+			case Var(_):
+				postfix = "=value";
+			case Function(args,vargs):
+				postfix = " ";
+				for (arg in args)
+					postfix += (arg.opt ? "[" : "<") + arg.name + (arg.opt ? "]" : ">");
+				if (vargs != null)
+					postfix += " [arg1 [arg2 ...[argN]]]";
+			default:
+		}
 
 		var versions = arg.aliases != null ? arg.aliases.concat([arg.command]) : [arg.command];
 		versions = versions.filter(function(s) return s != null && s != "");
@@ -28,7 +40,7 @@ class Dispatch
 
 		var ret = new StringBuf();
 		ret.add("  ");
-		ret.add(StringTools.rpad(versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v : prefix + prefix + v).join(", "), " ", argSize));
+		ret.add(StringTools.rpad(versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v + postfix : prefix + prefix + v + postfix).join(", "), " ", argSize));
 		ret.add("   ");
 		if (arg.description != null)
 			ret.add(arg.description);
