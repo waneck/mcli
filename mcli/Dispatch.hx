@@ -1,4 +1,5 @@
 package mcli;
+import mcli.internal.Data;
 #if macro
 import haxe.macro.*;
 #end
@@ -6,11 +7,15 @@ import haxe.macro.*;
 class Dispatch
 {
 
-	@:macro public function dispatch(e:Expr)
+	public static function showUsageOf(args:Array<Argument>):String
 	{
-		//get type of expr
-		//traverse through type adding definitions
-
-
+		return args.toString(); //TODO do it right
 	}
+
+	// macro public function dispatch(e:Expr)
+	// {
+	// 	//get type of expr
+	// 	//traverse through type adding definitions
+	// 	return e;
+	// }
 }

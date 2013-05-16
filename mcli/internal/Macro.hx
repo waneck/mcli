@@ -31,6 +31,26 @@ class Macro
 		}
 	}
 
+	public static function registerUse(t:String, declaredPos:Position, parentType:String)
+	{
+		var g = types.get(t);
+		if (g == null)
+		{
+			types.set(t, { found:false, declaredPos:declaredPos, parentType:parentType });
+		}
+	}
+
+	public static function registerDecoder(t:String)
+	{
+		var g = types.get(t);
+		if (g == null)
+		{
+			types.set(t, { found:true, declaredPos:null, parentType:null });
+		} else {
+			g.found = true;
+		}
+	}
+
 	public static function build()
 	{
 		//reset statics for each reused context
@@ -44,6 +64,10 @@ class Macro
 			resetContext();
 			once = true;
 		}
+		var cls = Context.getLocalClass().get();
+		var lastCtor = getLastCtor(cls);
+		if (cls.params.length != 0)
+			throw new Error("Unsupported type parameters for Command Line macros", cls.pos);
 
 		//collect all @:arg members, and add a static
 		var fields = Context.getBuildFields();
@@ -160,11 +184,26 @@ class Macro
 					default: throw "assert";
 				}
 			} else {
-				ctor = { pos: Context.currentPos(), name:"new", meta: [], doc:null, access:[], kind:FFun({
+				var bsuper = [];
+				var args = [];
+				var access = [];
+				if (lastCtor != null)
+				{
+					if (lastCtor.isPublic) access.push(APublic);
+					switch(Context.follow(lastCtor.type))
+					{
+						case TFun(_args,_):
+							args = _args.map(function(arg) return { value:null, type:null, opt:arg.opt, name:arg.name });
+							bsuper.push({ expr:ECall(macro super, args.map(function(arg) return { expr:EConst(CIdent(arg.name)), pos:Context.currentPos() })), pos: Context.currentPos() });
+						default: throw "assert";
+					}
+				}
+
+				ctor = { pos: Context.currentPos(), name:"new", meta: [], doc:null, access:access, kind:FFun({
 					ret: null,
 					params: [],
-					expr: { expr : EBlock(setters), pos: Context.currentPos() },
-					args: []
+					expr: { expr : EBlock(setters.concat(bsuper)), pos: Context.currentPos() },
+					args: args
 				}) };
 				fields.push(ctor);
 			}
@@ -182,8 +221,29 @@ class Macro
 				access: [AStatic],
 				kind:FVar(null, { expr: EArrayDecl(arguments), pos: Context.currentPos() })
 			});
+			fields.push({
+				pos: Context.currentPos(),
+				name:"getArguments",
+				meta:[],
+				doc:null,
+				access:[APublic,AOverride],
+				kind:FFun({
+					ret: null,
+					params: [],
+					expr: { expr: EReturn(macro ARGUMENTS), pos: Context.currentPos() },
+					args: []
+				})
+			});
 		}
 		return fields;
+	}
+
+	private static function getLastCtor(c:ClassType)
+	{
+		if (c.superClass == null) return null;
+		var s = c.superClass.t.get();
+		if (s.constructor != null) return s.constructor.get();
+		return getLastCtor(s);
 	}
 
 	private static function isDispatch(t)
@@ -207,22 +267,6 @@ class Macro
 		{
 			case TInst(c,[p]) if (c.toString() == "Array"): p;
 			default: null;
-		}
-	}
-
-	public static function registerUse(t:String, declaredPos:Position, parentType:String)
-	{
-		var g = types.get(t);
-	}
-
-	public static function registerDecoder(t:String)
-	{
-		var g = types.get(t);
-		if (g == null)
-		{
-			types.set(t, { found:true, declaredPos:null, parentType:null });
-		} else {
-			g.found = true;
 		}
 	}
 
@@ -285,10 +329,4 @@ class Macro
 			}
 		});
 	}
-				//registerModuleReuseCall
-				// case "haxe.ds.StringMap", "haxe.ds.IntMap":
-				// 	if (insideFunction)
-				// 		throw new Error("This type is not allowed inside a function", pos);
-				// 	ensureArgs(c.toString(), p, 1, pos);
-				// 	VarHash(c.toString() == "haxe.ds.StringMap" ? TString : TInt, convertType(p[0], insideFunction, pos));
 }

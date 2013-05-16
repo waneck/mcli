@@ -16,12 +16,15 @@ class Test
 	public static function main()
 	{
 
+		trace(untyped Ant.ARGUMENTS);
+		var ant = new Ant();
+		trace(ant.D);
 	}
 
 }
 
 //replicating http://commons.apache.org/proper/commons-cli/usage.html
-class Ant implements mcli.CommandLine
+class Ant extends mcli.CommandLine
 {
 	@:arg('be extra quiet')
 	public var quiet:Bool = false;
@@ -37,7 +40,7 @@ class Ant implements mcli.CommandLine
 	@:arg('print this message')
 	public function help()
 	{
-		// Sys.println(Dispatcher.printHelp(this));
+		Sys.println(this.toString());
 	}
 
 	@:arg('print project help information')
