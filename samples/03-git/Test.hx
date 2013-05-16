@@ -1,13 +1,19 @@
+import mcli.CommandLine;
+import mcli.Dispatch;
+
 class Test {
 
 	static function main() {
 		trace("hello world");
+		trace (new Git());
 	}
 
 }
 
-class Git
+class Git extends CommandLine
 {
+	@:msg('The most commonly used git commands are:')
+
 	@:arg('Add file contents to the index')
 	public function add(d:Dispatch)
 	{
@@ -33,20 +39,15 @@ class Git
 	}
 }
 
-class GitCommand
+class GitCommand extends CommandLine
 {
 	@:arg('be verbose', ['v'])
 	public var verbose:Bool;
 
-	public function new()
-	{
-
-	}
-
 	@:arg('print this message', ['h'], '')
 	public function help()
 	{
-		Sys.println( Dispatch.getHelp(this) );
+		Sys.println(this.toString());
 	}
 }
 

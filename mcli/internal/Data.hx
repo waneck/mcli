@@ -10,6 +10,8 @@ typedef Argument =
 
 enum Kind
 {
+	//stub
+	Message;
 	//variable
 	Flag;
 	VarHash(key:Type, value:Type, ?valueIsArray:Bool);

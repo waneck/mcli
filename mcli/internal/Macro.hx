@@ -84,6 +84,12 @@ class Macro
 				continue;
 			}
 
+			for (m in f.meta) if (m.name == ":msg")
+			{
+				var descr = m.params[0];
+				arguments.push(macro { command:"", aliases:null, description:$descr, kind:mcli.internal.Data.Kind.Message });
+			}
+
 			var meta = null;
 			for(m in f.meta) if (m.name == ":arg") meta = m;
 			if (meta != null)
