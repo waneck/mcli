@@ -16,8 +16,11 @@ class Test
 	public static function main()
 	{
 
-		trace(untyped Ant.ARGUMENTS);
 		var ant = new Ant();
+
+
+		trace(ant.showUsage());
+		trace(ant);
 		trace(ant.D);
 	}
 

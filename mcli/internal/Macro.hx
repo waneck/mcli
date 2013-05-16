@@ -120,6 +120,7 @@ class Macro
 							t.toType();
 						}
 					case FFun(fn):
+						if (fn.params.length > 0) throw new Error("Unsupported function with parameters as an argument", f.pos);
 						var fn = { ret : null, params: [], expr: macro {}, args: fn.args };
 						Context.typeof({ expr: EFunction(null,fn), pos: f.pos });
 				};
