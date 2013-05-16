@@ -51,6 +51,7 @@ class Macro
 		var arguments = [];
 		for (f in fields)
 		{
+			var name = f.name;
 			//no statics allowed
 			if (f.access.has(AStatic)) continue;
 			if (f.name == "new")
@@ -68,14 +69,15 @@ class Macro
 					case FVar(t, e), FProp(_, _, t, e):
 						if (e != null)
 						{
-							f.kind = switch f.kind
+							f.kind = switch (f.kind)
 							{
 								case FVar(t,e):
-									setters.push(macro this.$(f.name) = $e);
+									setters.push(macro this.$name = $e);
 									FVar(t,null);
 								case FProp(get,set,t,e):
-									setters.push(macro this.$(f.name) = $e);
+									setters.push(macro this.$name = $e);
 									FProp(get,set,t,null);
+								default: throw "assert";
 							};
 						}
 
@@ -84,7 +86,7 @@ class Macro
 							if (e == null) throw new Error("A field must either be fully typed, or be initialized with a typed expression", f.pos);
 							try
 							{
-								Context.typeof(e, f.pos);
+								Context.typeof(e);
 							}
 							catch(d:Dynamic)
 							{
@@ -93,15 +95,15 @@ class Macro
 						} else {
 							t.toType();
 						}
-					case FFun(f):
-						var f = { ret : null, params: [], expr: macro {}, args: f.args };
-						Context.typeof({ expr: EFunction(null,f), pos: f.pos });
+					case FFun(fn):
+						var fn = { ret : null, params: [], expr: macro {}, args: fn.args };
+						Context.typeof({ expr: EFunction(null,fn), pos: f.pos });
 				};
-				var command = macro ${f.name};
+				var command = Context.makeExpr(name, f.pos);
 				var description = meta.params[0];
 				if (meta.params.length > 2)
 					command = meta.params[2];
-				aliases = meta.params[1];
+				var aliases = meta.params[1];
 
 				if (aliases == null) aliases = macro null;
 				if (description == null) description = macro null;
@@ -184,7 +186,7 @@ class Macro
 		return fields;
 	}
 
-	private static function isDispatch(t:Type)
+	private static function isDispatch(t)
 	{
 		return switch(Context.follow(t))
 		{
@@ -194,12 +196,12 @@ class Macro
 				else if (c.get().superClass == null)
 					false;
 				else
-					isDispatch(TInst(c.get.superClass.t,null));
+					isDispatch(TInst(c.get().superClass.t,null));
 			default: false;
 		}
 	}
 
-	private static function arrayType(t:Type)
+	private static function arrayType(t)
 	{
 		return switch(Context.follow(t))
 		{

@@ -37,7 +37,7 @@ class Ant implements mcli.CommandLine
 	@:arg('print this message')
 	public function help()
 	{
-		Sys.println(Dispatcher.printHelp(this));
+		// Sys.println(Dispatcher.printHelp(this));
 	}
 
 	@:arg('print project help information')
