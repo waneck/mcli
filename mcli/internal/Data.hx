@@ -3,25 +3,20 @@ package mcli.internal;
 typedef Argument =
 {
 	command:String,
-	alias:Null<String>,
+	aliases:Null<Array<String>>,
 	description:Null<String>,
 	kind:Kind
 }
 
 enum Kind
 {
+	//variable
 	Flag;
-	SubDispatch;
-	VarHash;
+	VarHash(key:Type, value:Type, ?valueIsArray:Bool);
 	Var(t:Type);
-	Function(args:Array<Type>);
+	//function
+	Function(args:Array<Type>, ?varArgs:Null<Type>);
+	SubDispatch;
 }
 
-enum Type
-{
-	TString;
-	TInt;
-	TFloat;
-	TBool;
-	TCustom(name:String):
-}
+typedef Type = String;

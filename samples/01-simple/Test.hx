@@ -1,5 +1,5 @@
 package ;
-import mcli.Dispatch;
+// import mcli.Dispatch;
 
 /**
  * ...
@@ -8,20 +8,20 @@ import mcli.Dispatch;
 class Test
 {
 
-	public function new() 
+	public function new()
 	{
-		
+
 	}
-	
+
 	public static function main()
 	{
-		
+
 	}
-	
+
 }
 
 //replicating http://commons.apache.org/proper/commons-cli/usage.html
-class Ant extends Dispatch
+class Ant implements mcli.CommandLine
 {
 	@:arg('be extra quiet')
 	public var quiet:Bool = false;
@@ -33,52 +33,52 @@ class Ant extends Dispatch
 	public var emacs:Bool = false;
 	@:arg('use value for given property')
 	public var D:Map<String,String> = new Map();
-	
+
 	@:arg('print this message')
-	public function doHelp()
+	public function help()
 	{
-		printHelp();
+		Sys.println(Dispatcher.printHelp(this));
 	}
-	
+
 	@:arg('print project help information')
-	public function doProjectHelp()
+	public function projectHelp()
 	{
-		
+
 	}
-	
+
 	@:arg('print the version information and exit')
-	public function doVersion()
+	public function version()
 	{
-		
+
 	}
-	
+
 	@:arg('use given file for log')
-	public function doLogfile(file:String)
+	public function logfile(file:String)
 	{
-		
+
 	}
-	
+
 	@:arg('the class which is to perform logging')
-	public function doLogger(clsname:String)
+	public function logger(clsname:String)
 	{
-		
+
 	}
-	
+
 	@:arg('add an instance of class as a project listener')
-	public function doListener(clsname:String)
+	public function listener(clsname:String)
 	{
-		
+
 	}
-	
+
 	@:arg('use given buildfile')
-	public function doBuildFile(file:String)
+	public function buildFile(file:String)
 	{
-		
+
 	}
-	
+
 	@:arg('search for buildfile towards the root of the filesystem and use it')
-	public function doFind(file:String)
+	public function find(file:String)
 	{
-		
+
 	}
 }

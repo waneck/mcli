@@ -1,0 +1,3 @@
+-cp samples/01-simple
+-neko neko.n
+-main Test
