@@ -2,6 +2,7 @@ package mcli.internal;
 
 typedef Argument =
 {
+	name:String,
 	command:String,
 	aliases:Null<Array<String>>,
 	description:Null<String>,

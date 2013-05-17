@@ -3,11 +3,36 @@ import mcli.Dispatch;
 
 class Test {
 
-	static function main() {
-		trace("hello world");
-		trace (new Git());
+	static function main()
+	{
+		Dispatch.addDecoder(new TestingDecoder());
+		new Dispatch(Sys.args()).dispatch(new Git());
+		trace(new Git());
 	}
 
+}
+
+class Testing
+{
+	public var str:String;
+
+	public function new(str)
+	{
+		this.str = str;
+	}
+}
+
+class TestingDecoder
+{
+	public function new()
+	{
+
+	}
+
+	public function fromString(s:String):Testing
+	{
+		return new Testing(s + ".");
+	}
 }
 
 class Git extends CommandLine
@@ -35,6 +60,13 @@ class Git extends CommandLine
 	@:arg('Checkout a branch or paths to the working tree')
 	public function checkout(d:Dispatch)
 	{
+
+	}
+
+	@:arg('Testing argument')
+	public function testingArgument(arg:Testing)
+	{
+		trace("called testing " + arg.str);
 
 	}
 }

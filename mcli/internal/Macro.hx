@@ -33,6 +33,11 @@ class Macro
 
 	public static function registerUse(t:String, declaredPos:Position, parentType:String)
 	{
+		switch(t)
+		{
+			case "Int", "Float", "String", "Bool": return;
+			default:
+		}
 		var g = types.get(t);
 		if (g == null)
 		{
@@ -65,10 +70,17 @@ class Macro
 			once = true;
 		}
 		var cls = Context.getLocalClass().get();
+		var clsname = Context.getLocalClass().toString();
 		var lastCtor = getLastCtor(cls);
 		if (cls.params.length != 0)
 			throw new Error("Unsupported type parameters for Command Line macros", cls.pos);
 
+		function convert(t:haxe.macro.Type, pos:Position):mcli.internal.Type
+		{
+			var ret = Macro.convertType(t,pos);
+			registerUse(ret, pos, clsname);
+			return ret;
+		}
 		//collect all @:arg members, and add a static
 		var fields = Context.getBuildFields();
 		var ctor = null, setters = [];
@@ -87,7 +99,7 @@ class Macro
 			for (m in f.meta) if (m.name == ":msg")
 			{
 				var descr = m.params[0];
-				arguments.push(macro { command:"", aliases:null, description:$descr, kind:mcli.internal.Data.Kind.Message });
+				arguments.push(macro { name:"", command:"", aliases:null, description:$descr, kind:mcli.internal.Data.Kind.Message });
 			}
 
 			var meta = null;
@@ -130,7 +142,8 @@ class Macro
 						var fn = { ret : null, params: [], expr: macro {}, args: fn.args };
 						Context.typeof({ expr: EFunction(null,fn), pos: f.pos });
 				};
-				var command = Context.makeExpr(name, f.pos);
+				var namee = Context.makeExpr(name, f.pos);
+				var command = namee;
 				var description = meta.params[0];
 				if (meta.params.length > 2)
 					command = meta.params[2];
@@ -144,11 +157,11 @@ class Macro
 					case TAbstract(a,[p1,p2]) if (a.toString() == "Map"):
 						var arr = arrayType(p2);
 						if (arr != null) p2 = arr;
-						VarHash(convertType(p1, f.pos), convertType(p2, f.pos), arr != null);
+						VarHash(convert(p1, f.pos), convert(p2, f.pos), arr != null);
 					case TInst(c,[p1]) if (c.toString() == "haxe.ds.StringMap" || c.toString() == "haxe.ds.IntMap"):
 						var arr = arrayType(p1);
 						if (arr != null) p1 = arr;
-						VarHash( c.toString() == "haxe.ds.StringMap" ? "String":"Int", convertType(p1, f.pos), arr != null );
+						VarHash( c.toString() == "haxe.ds.StringMap" ? "String":"Int", convert(p1, f.pos), arr != null );
 					case TAbstract(a,[]) if (a.toString() == "Bool"):
 						Flag;
 					case TFun([arg],ret) if (isDispatch(arg.t)):
@@ -162,17 +175,19 @@ class Macro
 							switch(Context.follow(last.t))
 							{
 								case TInst(a,[t]) if (a.toString() == "Array"):
-									varArg = convertType(t, f.pos);
+									varArg = convert(t, f.pos);
 								default:
 									args.push(last);
 							}
+						} else if (last != null) {
+							args.push(last);
 						}
-						Function(args.map(function(a) return { name: a.name, opt: a.opt, t: convertType(a.t, f.pos) }), varArg);
+						Function(args.map(function(a) return { name: a.name, opt: a.opt, t: convert(a.t, f.pos) }), varArg);
 					default:
-						Var( convertType(type, f.pos) );
+						Var( convert(type, f.pos) );
 				};
 				var kind = Context.makeExpr(kind, f.pos);
-				arguments.push(macro { command:$command, aliases:$aliases, description:$description, kind:$kind });
+				arguments.push(macro { name:$namee, command:$command, aliases:$aliases, description:$description, kind:$kind });
 			}
 		}
 
@@ -295,7 +310,7 @@ class Macro
 		case TInst(c,_):
 			var c = c.get();
 			//TODO: test actual type
-			return c.statics.get().exists(function(cf) return cf.name == "ofString");
+			return c.statics.get().exists(function(cf) return cf.name == "fromString");
 		default: return false;
 		}
 	}
@@ -308,6 +323,11 @@ class Macro
 			//see if all types dependencies are met
 			for (k in types.keys())
 			{
+				switch(k)
+				{
+					case "String", "Int", "Float", "Bool": continue;
+					default:
+				}
 				var t = types.get(k);
 				if (t != null && !t.found)
 				{
@@ -323,7 +343,7 @@ class Macro
 					if (!t.found)
 					{
 						if (t.declaredPos == null) throw "assert"; //should never happen; declaredPos is null only for found=true
-						Context.warning("The type $k is used by a nano cli Dispatcher but no Decoder was declared", t.declaredPos);
+						Context.warning('The type $k is used by a nano cli Dispatcher but no Decoder was declared', t.declaredPos);
 						//FIXME: for subsequent compiles using the compile server, this information will not show up
 						var usedAt = usedTypes.get(t.parentType);
 						if (usedAt != null)
