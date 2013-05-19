@@ -37,33 +37,42 @@ class TestingDecoder
 
 class Git extends CommandLine
 {
-	@:msg('The most commonly used git commands are:')
-
-	@:arg('Add file contents to the index')
+	/**
+		[region] The most commonly used git commands are:
+		Add file contents to the index
+	**/
 	public function add(d:Dispatch)
 	{
 		//re-dispatch here
 	}
 
-	@:arg('Find by binary search the change that introduced the bug')
+	/**
+		Find by binary search the change that introduced the bug
+	**/
 	public function bisect(d:Dispatch)
 	{
 
 	}
 
-	@:arg('List, create, or delete branches')
+	/**
+		List, create, or delete branches
+	**/
 	public function branch(d:Dispatch)
 	{
 
 	}
 
-	@:arg('Checkout a branch or paths to the working tree')
+	/**
+		Checkout a branch or paths to the working tree
+	**/
 	public function checkout(d:Dispatch)
 	{
 
 	}
 
-	@:arg('Testing argument')
+	/**
+		Testing argument
+	**/
 	public function testingArgument(arg:Testing)
 	{
 		trace("called testing " + arg.str);
@@ -73,10 +82,17 @@ class Git extends CommandLine
 
 class GitCommand extends CommandLine
 {
-	@:arg('be verbose', ['v'])
+	/**
+		be verbose
+		@alias v
+	**/
 	public var verbose:Bool;
 
-	@:arg('print this message', ['h'], '')
+	/**
+		print this message
+		@command
+		@alias h
+	**/
 	public function help()
 	{
 		Sys.println(this.toString());
@@ -85,31 +101,55 @@ class GitCommand extends CommandLine
 
 class GitAdd extends GitCommand
 {
-	@:arg('dry run', ['n'])
+	/**
+		dry run
+		@alias n
+	**/
 	public var dryRun:Bool;
 
-	@:arg('interactive picking', ['i'])
+	/**
+		interactive picking
+		@alias i
+	**/
 	public var interactive:Bool;
 
-	@:arg('select hunks interactively', ['p'])
+	/**
+		select hunks interactively
+		@alias p
+	**/
 	public var patch:Bool;
 
-	@:arg('edit current diff and apply', ['e'])
+	/**
+		edit current diff and apply
+		@alias e
+	**/
 	public var edit:Bool;
 
-	@:arg('allow adding otherwise ignored files', ['f'])
+	/**
+		allow adding otherwise ignored files
+		@alias f
+	**/
 	public var force:Bool;
 
-	@:arg('update tracked files', ['u'])
+	/**
+		update tracked files
+		@alias u
+	**/
 	public var update:Bool;
 
-	@:arg("don't add, only refresh the index")
+	/**
+		don't add, only refresh the index
+	**/
 	public var refresh:Bool;
 
-	@:arg("just skip files which cannot be added because of errors")
+	/**
+		just skip files which cannot be added because of errors
+	**/
 	public var ignoreErrors:Bool;
 
-	@:arg("check if - even missing - files are ignored in dry run")
+	/**
+		check if - even missing - files are ignored in dry run
+	**/
 	public var ignoreMissing:Bool;
 
 	public function runDefault(varArgs:Array<String>)

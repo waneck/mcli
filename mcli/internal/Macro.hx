@@ -61,6 +61,8 @@ class Macro
 		//reset statics for each reused context
 		if (!once)
 		{
+			if (!Context.defined("use_rtti_doc"))
+				throw new Error("mini cli will only work when -D use_rtti_doc is defined", Context.currentPos());
 			Context.onMacroContextReused(function()
 			{
 				resetContext();
@@ -88,107 +90,124 @@ class Macro
 		for (f in fields)
 		{
 			var name = f.name;
-			//no statics allowed
-			if (f.access.has(AStatic)) continue;
 			if (f.name == "new")
 			{
 				ctor = f;
 				continue;
 			}
+			//no statics / private allowed
+			if (f.access.has(AStatic) || !f.access.has(APublic)) continue;
 
+			var skip = false;
 			for (m in f.meta) if (m.name == ":msg")
 			{
 				var descr = m.params[0];
 				arguments.push(macro { name:"", command:"", aliases:null, description:$descr, kind:mcli.internal.Data.Kind.Message });
+			} else if (m.name == ":skip") {
+				skip = true;
+				break;
 			}
+			if (skip) continue;
 
-			var meta = null;
-			for(m in f.meta) if (m.name == ":arg") meta = m;
-			if (meta != null)
+			var doc = f.doc;
+			var parsed = (f.doc != null ? Tools.parseComments(doc) : []);
+
+			var type = switch(f.kind)
 			{
-				var type = switch(f.kind)
+				case FVar(t, e), FProp(_, _, t, e):
+					if (e != null)
+					{
+						f.kind = switch (f.kind)
+						{
+							case FVar(t,e):
+								setters.push(macro this.$name = $e);
+								FVar(t,null);
+							case FProp(get,set,t,e):
+								setters.push(macro this.$name = $e);
+								FProp(get,set,t,null);
+							default: throw "assert";
+						};
+					}
+
+					if (t == null)
+					{
+						if (e == null) throw new Error("A field must either be fully typed, or be initialized with a typed expression", f.pos);
+						try
+						{
+							Context.typeof(e);
+						}
+						catch(d:Dynamic)
+						{
+							throw new Error("Dispatch field cannot build with error: $d . Consider using a constant, or a simple expression", f.pos);
+						}
+					} else {
+						t.toType();
+					}
+				case FFun(fn):
+					if (fn.params.length > 0) throw new Error("Unsupported function with parameters as an argument", f.pos);
+					var fn = { ret : null, params: [], expr: macro {}, args: fn.args };
+					Context.typeof({ expr: EFunction(null,fn), pos: f.pos });
+			};
+			var command = name;
+			var description = null, aliases = [], command = name, key = null, value = null;
+			for (p in parsed)
+			{
+				if (p.tag == null)
 				{
-					case FVar(t, e), FProp(_, _, t, e):
-						if (e != null)
-						{
-							f.kind = switch (f.kind)
-							{
-								case FVar(t,e):
-									setters.push(macro this.$name = $e);
-									FVar(t,null);
-								case FProp(get,set,t,e):
-									setters.push(macro this.$name = $e);
-									FProp(get,set,t,null);
-								default: throw "assert";
-							};
-						}
-
-						if (t == null)
-						{
-							if (e == null) throw new Error("A field must either be fully typed, or be initialized with a typed expression", f.pos);
-							try
-							{
-								Context.typeof(e);
-							}
-							catch(d:Dynamic)
-							{
-								throw new Error("Dispatch field cannot build with error: $d . Consider using a constant, or a simple expression", f.pos);
-							}
-						} else {
-							t.toType();
-						}
-					case FFun(fn):
-						if (fn.params.length > 0) throw new Error("Unsupported function with parameters as an argument", f.pos);
-						var fn = { ret : null, params: [], expr: macro {}, args: fn.args };
-						Context.typeof({ expr: EFunction(null,fn), pos: f.pos });
-				};
-				var namee = Context.makeExpr(name, f.pos);
-				var command = namee;
-				var description = meta.params[0];
-				if (meta.params.length > 2)
-					command = meta.params[2];
-				var aliases = meta.params[1];
-
-				if (aliases == null) aliases = macro null;
-				if (description == null) description = macro null;
-
-				var kind = switch(Context.follow(type))
-				{
-					case TAbstract(a,[p1,p2]) if (a.toString() == "Map"):
-						var arr = arrayType(p2);
-						if (arr != null) p2 = arr;
-						VarHash(convert(p1, f.pos), convert(p2, f.pos), arr != null);
-					case TInst(c,[p1]) if (c.toString() == "haxe.ds.StringMap" || c.toString() == "haxe.ds.IntMap"):
-						var arr = arrayType(p1);
-						if (arr != null) p1 = arr;
-						VarHash( c.toString() == "haxe.ds.StringMap" ? "String":"Int", convert(p1, f.pos), arr != null );
-					case TAbstract(a,[]) if (a.toString() == "Bool"):
-						Flag;
-					case TFun([arg],ret) if (isDispatch(arg.t)):
-						SubDispatch;
-					case TFun(args,ret):
-						var args = args.copy();
-						var last = args.pop();
-						var varArg = null;
-						if (last != null && last.name == "varArgs")
-						{
-							switch(Context.follow(last.t))
-							{
-								case TInst(a,[t]) if (a.toString() == "Array"):
-									varArg = convert(t, f.pos);
-								default:
-									args.push(last);
-							}
-						} else if (last != null) {
-							args.push(last);
-						}
-						Function(args.map(function(a) return { name: a.name, opt: a.opt, t: convert(a.t, f.pos) }), varArg);
+					description = p.contents;
+				} else switch (p.tag) {
+					case "region":
+						arguments.push(Context.makeExpr({ name:"", command:"", aliases:null, description:p.contents, kind:mcli.internal.Data.Kind.Message }, f.pos));
+					case "alias":
+						aliases.push(StringTools.trim(p.contents));
+					case "command":
+						command = StringTools.trim(p.contents);
+					case "key":
+						key = StringTools.trim(p.contents);
+					case "value":
+						value = StringTools.trim(p.contents);
 					default:
-						Var( convert(type, f.pos) );
-				};
-				var kind = Context.makeExpr(kind, f.pos);
-				arguments.push(macro { name:$namee, command:$command, aliases:$aliases, description:$description, kind:$kind });
+				}
 			}
+			if (key == null) key = "key";
+			if (value == null) value = "value";
+
+			var kind = switch(Context.follow(type))
+			{
+				case TAbstract(a,[p1,p2]) if (a.toString() == "Map"):
+					var arr = arrayType(p2);
+					if (arr != null) p2 = arr;
+					VarHash({ name:key, t:convert(p1, f.pos) }, { name:value, t:convert(p2, f.pos) }, arr != null);
+				case TInst(c,[p1]) if (c.toString() == "haxe.ds.StringMap" || c.toString() == "haxe.ds.IntMap"):
+					var arr = arrayType(p1);
+					if (arr != null) p1 = arr;
+					var t = c.toString() == "haxe.ds.StringMap" ? "String":"Int";
+					VarHash( { name:key, t:t }, {name:value, t:convert(p1, f.pos) }, arr != null );
+				case TAbstract(a,[]) if (a.toString() == "Bool"):
+					Flag;
+				case TFun([arg],ret) if (isDispatch(arg.t)):
+					SubDispatch;
+				case TFun(args,ret):
+					var args = args.copy();
+					var last = args.pop();
+					var varArg = null;
+					if (last != null && last.name == "varArgs")
+					{
+						switch(Context.follow(last.t))
+						{
+							case TInst(a,[t]) if (a.toString() == "Array"):
+								varArg = convert(t, f.pos);
+							default:
+								args.push(last);
+						}
+					} else if (last != null) {
+						args.push(last);
+					}
+					Function(args.map(function(a) return { name: a.name, opt: a.opt, t: convert(a.t, f.pos) }), varArg);
+				default:
+					Var( convert(type, f.pos) );
+			};
+			arguments.push(Context.makeExpr({ name:name, command:command, aliases:aliases, description:description, kind:kind }, f.pos));
 		}
 
 		if (setters.length != 0)
@@ -231,10 +250,8 @@ class Macro
 			}
 		}
 
-		if (arguments.length == 0)
+		if (arguments.length != 0)
 		{
-			Context.warning("This class has no @:arg macros", Context.currentPos());
-		} else {
 			fields.push({
 				pos: Context.currentPos(),
 				name:"ARGUMENTS",
@@ -243,19 +260,20 @@ class Macro
 				access: [AStatic],
 				kind:FVar(null, { expr: EArrayDecl(arguments), pos: Context.currentPos() })
 			});
-			fields.push({
-				pos: Context.currentPos(),
-				name:"getArguments",
-				meta:[],
-				doc:null,
-				access:[APublic,AOverride],
-				kind:FFun({
-					ret: null,
-					params: [],
-					expr: { expr: EReturn(macro ARGUMENTS.concat(super.getArguments())), pos: Context.currentPos() },
-					args: []
-				})
-			});
+			if (!fields.exists(function(f) return f.name == "getArguments"))
+				fields.push({
+					pos: Context.currentPos(),
+					name:"getArguments",
+					meta:[],
+					doc:null,
+					access:[APublic,AOverride],
+					kind:FFun({
+						ret: null,
+						params: [],
+						expr: { expr: EReturn(macro ARGUMENTS.concat(super.getArguments())), pos: Context.currentPos() },
+						args: []
+					})
+				});
 		}
 		return fields;
 	}

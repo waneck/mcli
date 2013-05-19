@@ -15,7 +15,7 @@ enum Kind
 	Message;
 	//variable
 	Flag;
-	VarHash(key:Type, value:Type, ?valueIsArray:Bool);
+	VarHash(key:{ name:String, t:Type }, value:{ name:String, t:Type }, ?valueIsArray:Bool);
 	Var(t:Type);
 	//function
 	Function(args:Array<{name:String, opt:Bool, t:Type}>, ?varArgs:Null<Type>);

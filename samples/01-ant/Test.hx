@@ -29,61 +29,101 @@ class Test
 //replicating http://commons.apache.org/proper/commons-cli/usage.html
 class Ant extends mcli.CommandLine
 {
-	@:arg('be extra quiet')
+	/**
+		[region] Options:
+
+		be extra quiet
+	**/
 	public var quiet:Bool = false;
-	@:arg('be extra verbose')
+
+	/**
+		be extra verbose
+	**/
 	public var verbose:Bool = false;
-	@:arg('print debugging information')
+
+	/**
+		print debugging information
+	**/
 	public var debug:Bool = false;
-	@:arg('produce logging information without adornments')
+
+	/**
+		produce logging information without adornments
+	**/
 	public var emacs:Bool = false;
-	@:arg('use value for given property')
+
+	/**
+		use value for given property
+
+		@key    property
+		@value  value
+	**/
 	public var D:Map<String,String> = new Map();
 
-	@:arg('print this message')
+	/**
+		print this message
+	**/
 	public function help()
 	{
 		Sys.println(this.toString());
 	}
 
-	@:arg('print project help information')
+	/**
+		print project help information
+	**/
 	public function projectHelp()
 	{
 
 	}
 
-	@:arg('print the version information and exit')
+	/**
+		print the version information and exit
+	**/
 	public function version()
 	{
 
 	}
 
-	@:arg('use given file for log')
+	/**
+		use given file for log
+	**/
 	public function logfile(file:String)
 	{
 
 	}
 
-	@:arg('the class which is to perform logging')
+	/**
+		the class which is to perform logging
+	**/
 	public function logger(clsname:String)
 	{
 
 	}
 
-	@:arg('add an instance of class as a project listener')
+	/**
+		add an instance of class as a project listener
+	**/
 	public function listener(clsname:String)
 	{
 
 	}
 
-	@:arg('use given buildfile')
+	/**
+		use given buildfile
+	**/
 	public function buildFile(file:String)
 	{
 
 	}
 
-	@:arg('search for buildfile towards the root of the filesystem and use it')
+	/**
+		search for buildfile towards the root of the filesystem and use it
+	**/
 	public function find(file:String)
+	{
+
+	}
+
+	public function run()
 	{
 
 	}

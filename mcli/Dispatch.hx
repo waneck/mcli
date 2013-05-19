@@ -5,6 +5,7 @@ import mcli.internal.Data;
 import haxe.macro.Expr;
 import haxe.macro.*;
 #end
+using mcli.internal.Tools;
 
 class Dispatch
 {
@@ -16,7 +17,27 @@ class Dispatch
 		var prefix = "-";
 		if (arg.kind == SubDispatch || arg.kind == Message)
 			prefix = "";
-		return versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v : prefix + prefix + v);
+		return versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep());
+	}
+
+	private static function getPostfix(arg:Argument)
+	{
+		return switch(arg.kind)
+		{
+			case VarHash(k,v,_):
+				" " + k.name + "[=" + v.name +"]";
+			case Var(_):
+				"=value";
+			case Function(args,vargs):
+				var postfix = " ";
+				for (arg in args)
+					postfix += (arg.opt ? "[" : "<") + arg.name.toDashSep() + (arg.opt ? "]" : ">");
+				if (vargs != null)
+					postfix += " [arg1 [arg2 ...[argN]]]";
+				postfix;
+			default:
+				"";
+		};
 	}
 
 	/**
@@ -26,22 +47,7 @@ class Dispatch
 	**/
 	public static function argToString(arg:Argument, argSize=30, screenSize=80)
 	{
-		var postfix = "";
-		switch(arg.kind)
-		{
-			case VarHash(_,_,_):
-				postfix = " key[=value]";
-			case Var(_):
-				postfix = "=value";
-			case Function(args,vargs):
-				postfix = " ";
-				for (arg in args)
-					postfix += (arg.opt ? "[" : "<") + arg.name + (arg.opt ? "]" : ">");
-				if (vargs != null)
-					postfix += " [arg1 [arg2 ...[argN]]]";
-			default:
-		}
-
+		var postfix = getPostfix(arg);
 		var versions = getAliases(arg);
 
 		if (versions.length == 0)
@@ -92,10 +98,11 @@ class Dispatch
 		var maxSize = 0;
 		for (arg in args)
 		{
-			var size = arg.command.length;
+			var postfixSize = getPostfix(arg).length;
+			var size = arg.command.length + postfixSize + 2;
 			if (arg.aliases != null) for (a in arg.aliases)
 			{
-				size += a.length + 2;
+				size += a.length + 2 + postfixSize;
 			}
 
 			if (size > maxSize)

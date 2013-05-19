@@ -16,28 +16,52 @@ class Test
 //after example at http://commons.apache.org/proper/commons-cli/usage.html
 class Ls extends mcli.CommandLine
 {
-	@:arg('do not hide entries starting with .', ['a'])
+	/**
+		do not hide entries starting with .
+		@alias a
+	**/
 	public var all:Bool;
 
-	@:arg('do not list implied . and ..', ['A'])
+	/**
+		do not list implied . and ..
+		@alias A
+	**/
 	public var almostAll:Bool; //conversion to almost-all is implied
 
-	@:arg('print octal escapes for nongraphic ' +
-		'characters', ['b'])
+	/**
+		print octal escapes for nongraphic characters
+		@alias b
+	**/
 	public var escape:Bool;
 
-	@:arg('use SIZE-byte blocks')
+	/**
+		use SIZE-byte blocks
+	**/
 	public var blockSize:Int;
 
-	@:arg('do not list implied entries ending with -', ['B'])
+	/**
+		do not list implied entries ending with -
+		@alias B
+	**/
 	public var ignoreBackups:Bool;
 
-	@:arg("with -lt: sort by, and show, ctime (time of last "
-			+ "modification of file status information) with "
-			+ "-l:show ctime and sort by name otherwise: sort "
-			+ "by ctime", ['c'], '' )
+	/**
+		with -lt:
+			sort by, and show, ctime (time of last modification of file status information)
+		with -l:
+			show ctime and sort by name
+		otherwise:
+			sort by ctime
+
+		@command
+		@alias c
+	**/
 	public var ctime:Bool;
 
-	@:arg('list entries by columns', ['C'], '')
+	/**
+		list entries by columns
+		@command
+		@alias C
+	**/
 	public var columns:Bool;
 }
