@@ -361,7 +361,7 @@ class Macro
 					if (!t.found)
 					{
 						if (t.declaredPos == null) throw "assert"; //should never happen; declaredPos is null only for found=true
-						Context.warning('The type $k is used by a nano cli Dispatcher but no Decoder was declared', t.declaredPos);
+						Context.warning('The type $k is used by a mini cli Dispatcher but no Decoder was declared', t.declaredPos);
 						//FIXME: for subsequent compiles using the compile server, this information will not show up
 						var usedAt = usedTypes.get(t.parentType);
 						if (usedAt != null)
