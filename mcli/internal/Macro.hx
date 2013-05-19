@@ -252,7 +252,7 @@ class Macro
 				kind:FFun({
 					ret: null,
 					params: [],
-					expr: { expr: EReturn(macro ARGUMENTS), pos: Context.currentPos() },
+					expr: { expr: EReturn(macro ARGUMENTS.concat(super.getArguments())), pos: Context.currentPos() },
 					args: []
 				})
 			});

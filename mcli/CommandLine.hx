@@ -12,7 +12,7 @@ class CommandLine
 	**/
 	public function getArguments():Array<mcli.internal.Data.Argument>
 	{
-		return null;
+		return [];
 	}
 
 	public function showUsage():String
