@@ -9,36 +9,6 @@ using mcli.internal.Tools;
 
 class Dispatch
 {
-	private static function getAliases(arg:Argument)
-	{
-		var versions = arg.aliases != null ? arg.aliases.concat([arg.command]) : [arg.command];
-		versions = versions.filter(function(s) return s != null && s != "");
-
-		var prefix = "-";
-		if (arg.kind == SubDispatch || arg.kind == Message)
-			prefix = "";
-		return versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep());
-	}
-
-	private static function getPostfix(arg:Argument)
-	{
-		return switch(arg.kind)
-		{
-			case VarHash(k,v,_):
-				" " + k.name + "[=" + v.name +"]";
-			case Var(_):
-				"=value";
-			case Function(args,vargs):
-				var postfix = " ";
-				for (arg in args)
-					postfix += (arg.opt ? "[" : "<") + arg.name.toDashSep() + (arg.opt ? "]" : ">");
-				if (vargs != null)
-					postfix += " [arg1 [arg2 ...[argN]]]";
-				postfix;
-			default:
-				"";
-		};
-	}
 
 	/**
 		Formats an argument definition to String.
@@ -98,6 +68,7 @@ class Dispatch
 		var maxSize = 0;
 		for (arg in args)
 		{
+			if (arg.name == "runDefault") continue;
 			var postfixSize = getPostfix(arg).length;
 			var size = arg.command.length + postfixSize + 2;
 			if (arg.aliases != null) for (a in arg.aliases)
@@ -113,6 +84,7 @@ class Dispatch
 		var buf = new StringBuf();
 		for (arg in args)
 		{
+			if (arg.name == "runDefault") continue;
 			var str = argToString(arg, maxSize, screenSize);
 			if (str.length > 0)
 			{
@@ -121,6 +93,37 @@ class Dispatch
 			}
 		}
 		return buf.toString();
+	}
+
+	private static function getAliases(arg:Argument)
+	{
+		var versions = arg.aliases != null ? arg.aliases.concat([arg.command]) : [arg.command];
+		versions = versions.filter(function(s) return s != null && s != "");
+
+		var prefix = "-";
+		if (arg.kind == SubDispatch || arg.kind == Message)
+			prefix = "";
+		return versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep());
+	}
+
+	private static function getPostfix(arg:Argument)
+	{
+		return switch(arg.kind)
+		{
+			case VarHash(k,v,_):
+				" " + k.name + "[=" + v.name +"]";
+			case Var(_):
+				"=value";
+			case Function(args,vargs):
+				var postfix = " ";
+				for (arg in args)
+					postfix += (arg.opt ? "[" : "<") + arg.name.toDashSep() + (arg.opt ? "]" : ">");
+				if (vargs != null)
+					postfix += " [arg1 [arg2 ...[argN]]]";
+				postfix;
+			default:
+				"";
+		};
 	}
 
 	private static var decoders:Map<String,Decoder<Dynamic>>;
@@ -209,9 +212,9 @@ class Dispatch
 	private function errln(s:String)
 	{
 #if sys
-		Sys.stderr().writeString(s+ "\n");
+		Sys.stderr().writeString(s + "\n");
 #else
-		trace("ERROR " + s);
+		trace(s);
 #end
 	}
 
@@ -228,16 +231,16 @@ class Dispatch
 				switch(e)
 				{
 					case UnknownArgument(a):
-						errln('Unkown argument: $a');
+						errln('ERROR: Unkown argument: $a');
 					case ArgumentFormatError(t,p):
-						errln('Unrecognized format for $t. Passed $p');
+						errln('ERROR: Unrecognized format for $t. Passed $p');
 					case DecoderNotFound(t):
 						errln('[mcli error] No Decoder found for type $t');
 					case MissingOptionArgument(opt,name):
 						name = name != null ? " (" + name + ")" : "";
-						errln('The option $opt requires an argument$name, but no argument was passed');
+						errln('ERROR: The option $opt requires an argument$name, but no argument was passed');
 					case MissingArgument:
-						errln('Missing arguments');
+						errln('ERROR: Missing arguments');
 				}
 				errln(v.showUsage());
 #if sys
@@ -254,30 +257,22 @@ class Dispatch
 			for (a in getAliases(arg))
 				names.set(a, arg);
 
-		if (args.length == 0)
-		{
-			var argDef = names.get("-run-default");
-			if (argDef == null)
-				throw MissingArgument;
-			switch(argDef.kind)
-			{
-				case Function([],va):
-					var v:Dynamic = v;
-					if (va == null)
-						v.runDefault();
-					else
-						v.runDefault([]);
-				default:
-					throw MissingArgument;
-			}
-		}
+		var didCall = false;
+		var delays = [];
 		while (args.length > 0)
 		{
 			var arg = args.pop();
 			var argDef = names.get(arg);
 			if (argDef == null)
 			{
-				argDef = names.get("-run-default");
+				if (arg.charCodeAt(0) != '-'.code)
+				{
+					argDef = names.get("-run-default");
+					args.push(arg);
+				} else if (arg.charCodeAt(1) != '-'.code) {
+					args = args.concat(arg.substr(1).split('').map(function(v) return '-' + v));
+					continue;
+				}
 			}
 			if (argDef == null)
 				if (arg != null)
@@ -319,6 +314,7 @@ class Dispatch
 					var v = decode(n, t);
 					Reflect.setProperty(v, argDef.name, v);
 				case Function(fargs,varArg):
+					didCall = true;
 					var applied = [];
 					for (fa in fargs)
 					{
@@ -330,15 +326,45 @@ class Dispatch
 						var va = [];
 						while (args.length > 0)
 						{
-							va.push(decode(arg,varArg));
+							var arg = args.pop();
+							if (arg.charCodeAt(0) == '-'.code)
+							{
+								args.push(arg);
+								break;
+							} else {
+								va.push(decode(arg,varArg));
+							}
 						}
 						applied.push(va);
 					}
-					Reflect.callMethod(v, Reflect.field(v, argDef.name), applied);
+					delays.push(function() Reflect.callMethod(v, Reflect.field(v, argDef.name), applied));
 				case SubDispatch:
+					didCall = true;
+					for (d in delays) d();
+					delays = [];
 					Reflect.callMethod(v, Reflect.field(v, argDef.name), [this]);
 				case Message:
 					throw UnknownArgument(arg);
+			}
+		}
+
+		for (d in delays) d();
+
+		if (!didCall)
+		{
+			var argDef = names.get("-run-default");
+			if (argDef == null)
+				throw MissingArgument;
+			switch(argDef.kind)
+			{
+				case Function([],va):
+					var v:Dynamic = v;
+					if (va == null)
+						v.runDefault();
+					else
+						v.runDefault([]);
+				default:
+					throw MissingArgument;
 			}
 		}
 	}

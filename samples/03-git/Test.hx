@@ -157,6 +157,8 @@ class GitAdd extends GitCommand
 	public function runDefault(varArgs:Array<String>)
 	{
 		trace("running default with " + varArgs);
+		if (varArgs.length == 0)
+			throw mcli.DispatchError.MissingArgument;
 	}
 }
 
