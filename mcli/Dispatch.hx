@@ -305,6 +305,12 @@ class Dispatch
 				case VarHash(key,val,arr):
 					var map:Map<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
 					var n = args.pop();
+					var toAdd = [];
+					while(n != null && n.charCodeAt(0) == '-'.code)
+					{
+						toAdd.push(n);
+						n = args.pop();
+					}
 					if (n == null)
 						throw MissingOptionArgument(arg, key.name);
 					var kv = n.split("=");
@@ -325,10 +331,15 @@ class Dispatch
 						else
 							map.set(k,v);
 					}
+					if (toAdd.length > 0)
+					{
+						toAdd.reverse();
+						args = args.concat(toAdd);
+					}
 				case Var(t):
 					var n = args.pop();
 					var toAdd = [];
-					while(n.charCodeAt(0) == '-'.code)
+					while(n != null && n.charCodeAt(0) == '-'.code)
 					{
 						toAdd.push(n);
 						n = args.pop();
@@ -349,7 +360,7 @@ class Dispatch
 					for (fa in fargs)
 					{
 						arg = args.pop();
-						while (arg.charCodeAt(0) == '-'.code)
+						while (arg != null && arg.charCodeAt(0) == '-'.code)
 						{
 							toAdd.push(arg);
 							arg = args.pop();

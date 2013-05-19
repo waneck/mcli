@@ -1,5 +1,5 @@
 package ;
-// import mcli.Dispatch;
+import mcli.Dispatch;
 
 /**
  * ...
@@ -15,13 +15,7 @@ class Test
 
 	public static function main()
 	{
-
-		var ant = new Ant();
-
-
-		trace(ant.showUsage());
-		trace(ant);
-		trace(ant.D);
+		new Dispatch(Sys.args()).dispatch(new Ant());
 	}
 
 }

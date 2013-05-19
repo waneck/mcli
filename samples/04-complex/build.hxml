@@ -1,0 +1,5 @@
+-cp ../..
+-dce no
+-main Test
+-neko app.n
+-D use_rtti_doc
