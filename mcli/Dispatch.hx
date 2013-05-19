@@ -254,13 +254,30 @@ class Dispatch
 			for (a in getAliases(arg))
 				names.set(a, arg);
 
+		if (args.length == 0)
+		{
+			var argDef = names.get("-run-default");
+			if (argDef == null)
+				throw MissingArgument;
+			switch(argDef.kind)
+			{
+				case Function([],va):
+					var v:Dynamic = v;
+					if (va == null)
+						v.runDefault();
+					else
+						v.runDefault([]);
+				default:
+					throw MissingArgument;
+			}
+		}
 		while (args.length > 0)
 		{
 			var arg = args.pop();
 			var argDef = names.get(arg);
 			if (argDef == null)
 			{
-				argDef = names.get("runDefault");
+				argDef = names.get("-run-default");
 			}
 			if (argDef == null)
 				if (arg != null)

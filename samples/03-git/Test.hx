@@ -45,6 +45,7 @@ class Git extends CommandLine
 		//re-dispatch here
 		trace("git add called");
 		d.dispatch(new GitAdd());
+		trace("HERE");
 	}
 
 	/**
