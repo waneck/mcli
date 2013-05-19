@@ -7,4 +7,5 @@ enum DispatchError
 	DecoderNotFound(type:String);
 	MissingOptionArgument(opt:String, ?name:String);
 	MissingArgument;
+	TooManyArguments;
 }

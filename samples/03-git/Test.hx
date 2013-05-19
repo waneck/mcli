@@ -73,6 +73,15 @@ class Git extends CommandLine
 	}
 
 	/**
+		Record changes to the repository
+	**/
+	public function commit(d:Dispatch)
+	{
+		trace("commit");
+		d.dispatch(new GitCommit());
+	}
+
+	/**
 		Testing argument
 	**/
 	public function testingArgument(arg:Testing)
@@ -98,6 +107,26 @@ class GitCommand extends CommandLine
 	public function help()
 	{
 		Sys.println(this.toString());
+	}
+}
+
+class GitCommit extends GitCommand
+{
+	/**
+		commit all changed files
+		@alias a
+	**/
+	public var all:Bool;
+
+	/**
+		commit message
+		@alias m
+	**/
+	public var message:String;
+
+	public function runDefault()
+	{
+
 	}
 }
 

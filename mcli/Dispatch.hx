@@ -31,7 +31,15 @@ class Dispatch
 
 		var ret = new StringBuf();
 		ret.add("  ");
-		ret.add(StringTools.rpad(versions.map(function(v) return v + postfix).join(", "), " ", argSize));
+		var argsTxt = StringTools.rpad(versions.map(function(v) return v).join(", ") + postfix, " ", argSize);
+		ret.add(argsTxt);
+		if (argsTxt.length > argSize)
+		{
+			ret.add("\n");
+			for (i in 0...argSize)
+				ret.add(" ");
+		}
+
 		ret.add("   ");
 		if (arg.description != null)
 			ret.add(arg.description);
@@ -70,10 +78,10 @@ class Dispatch
 		{
 			if (arg.name == "runDefault") continue;
 			var postfixSize = getPostfix(arg).length;
-			var size = arg.command.length + postfixSize + 2;
+			var size = arg.command.length + postfixSize + 3;
 			if (arg.aliases != null) for (a in arg.aliases)
 			{
-				size += a.length + 2 + postfixSize;
+				size += a.length + 3;
 			}
 
 			if (size > maxSize)
@@ -113,7 +121,7 @@ class Dispatch
 			case VarHash(k,v,_):
 				" " + k.name + "[=" + v.name +"]";
 			case Var(_):
-				"=value";
+				" <" + arg.name + ">";
 			case Function(args,vargs):
 				var postfix = " ";
 				for (arg in args)
@@ -128,6 +136,12 @@ class Dispatch
 
 	private static var decoders:Map<String,Decoder<Dynamic>>;
 
+	/**
+		Registers a custom Decoder<T> that will be used to decode 'T' types.
+		This function is type-checked and calling it will avoid the 'no Decoder was declared' warnings.
+
+		IMPORTANT: this function must be called before the first .dispatch() that uses the custom type is called
+	**/
 	macro public static function addDecoder(decoder:ExprOf<Decoder<Dynamic>>)
 	{
 		var t = Context.typeof(decoder);
@@ -241,6 +255,8 @@ class Dispatch
 						errln('ERROR: The option $opt requires an argument$name, but no argument was passed');
 					case MissingArgument:
 						errln('ERROR: Missing arguments');
+					case TooManyArguments:
+						errln("ERROR: Too many arguments");
 				}
 				errln(v.showUsage());
 #if sys
@@ -269,8 +285,10 @@ class Dispatch
 				{
 					argDef = names.get("-run-default");
 					args.push(arg);
-				} else if (arg.charCodeAt(1) != '-'.code) {
-					args = args.concat(arg.substr(1).split('').map(function(v) return '-' + v));
+				} else if (arg.length > 2 && arg.charCodeAt(1) != '-'.code) {
+					var a = arg.substr(1).split('').map(function(v) return '-' + v);
+					a.reverse();
+					args = args.concat(a);
 					continue;
 				}
 			}
@@ -309,16 +327,33 @@ class Dispatch
 					}
 				case Var(t):
 					var n = args.pop();
+					var toAdd = [];
+					while(n.charCodeAt(0) == '-'.code)
+					{
+						toAdd.push(n);
+						n = args.pop();
+					}
 					if (n == null)
 						throw MissingOptionArgument(arg);
 					var v = decode(n, t);
 					Reflect.setProperty(v, argDef.name, v);
+					if (toAdd.length > 0)
+					{
+						toAdd.reverse();
+						args = args.concat(toAdd);
+					}
 				case Function(fargs,varArg):
 					didCall = true;
 					var applied = [];
+					var toAdd = [];
 					for (fa in fargs)
 					{
 						arg = args.pop();
+						while (arg.charCodeAt(0) == '-'.code)
+						{
+							toAdd.push(arg);
+							arg = args.pop();
+						}
 						applied.push(decode(arg, fa.t));
 					}
 					if (varArg != null)
@@ -337,7 +372,14 @@ class Dispatch
 						}
 						applied.push(va);
 					}
+					if (argDef.name == "runDefault" && args.length != 0)
+						throw TooManyArguments;
 					delays.push(function() Reflect.callMethod(v, Reflect.field(v, argDef.name), applied));
+					if (toAdd.length != 0)
+					{
+						toAdd.reverse();
+						args = args.concat(toAdd);
+					}
 				case SubDispatch:
 					didCall = true;
 					for (d in delays) d();
