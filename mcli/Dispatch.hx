@@ -206,8 +206,48 @@ class Dispatch
 		this.args.reverse();
 	}
 
-	public function dispatch(v:mcli.CommandLine):Void
+	private function errln(s:String)
 	{
+#if sys
+		Sys.stderr().writeString(s+ "\n");
+#else
+		trace("ERROR " + s);
+#end
+	}
+
+	public function dispatch(v:mcli.CommandLine, handleExceptions = true):Void
+	{
+		if (handleExceptions)
+		{
+			try
+			{
+				dispatch(v,false);
+			}
+			catch(e:DispatchError)
+			{
+				switch(e)
+				{
+					case UnknownArgument(a):
+						errln('Unkown argument: $a');
+					case ArgumentFormatError(t,p):
+						errln('Unrecognized format for $t. Passed $p');
+					case DecoderNotFound(t):
+						errln('[mcli error] No Decoder found for type $t');
+					case MissingOptionArgument(opt,name):
+						name = name != null ? " (" + name + ")" : "";
+						errln('The option $opt requires an argument$name, but no argument was passed');
+					case MissingArgument:
+						errln('Missing arguments');
+				}
+				errln(v.showUsage());
+#if sys
+				Sys.exit(1);
+#end
+			}
+
+			return;
+		}
+
 		var defs = v.getArguments();
 		var names = new Map();
 		for (arg in defs)
@@ -223,14 +263,44 @@ class Dispatch
 				argDef = names.get("runDefault");
 			}
 			if (argDef == null)
-				throw UnknownArgument(arg);
+				if (arg != null)
+					throw UnknownArgument(arg);
+				else
+					throw MissingArgument;
 
 			switch(argDef.kind)
 			{
 				case Flag:
-					Reflect.setField(v, argDef.name, true);
-				case VarHash(k,v,arr):
-					var map:Map<Dynamic,Dynamic> = Reflect.field(v, argDef.name);
+					Reflect.setProperty(v, argDef.name, true);
+				case VarHash(key,val,arr):
+					var map:Map<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
+					var n = args.pop();
+					if (n == null)
+						throw MissingOptionArgument(arg, key.name);
+					var kv = n.split("=");
+					var k = decode(kv[0], key.t);
+					var v = null;
+					if (kv[1] != null)
+						v = decode(kv[1], val.t);
+					var oldv = map.get(k);
+					if (oldv != null)
+					{
+						if (arr)
+							oldv.push(v);
+						// else //TODO
+							// throw RepeatedArgument(arg
+					} else {
+						if (arr)
+							map.set(k, [v]);
+						else
+							map.set(k,v);
+					}
+				case Var(t):
+					var n = args.pop();
+					if (n == null)
+						throw MissingOptionArgument(arg);
+					var v = decode(n, t);
+					Reflect.setProperty(v, argDef.name, v);
 				case Function(fargs,varArg):
 					var applied = [];
 					for (fa in fargs)
@@ -248,7 +318,10 @@ class Dispatch
 						applied.push(va);
 					}
 					Reflect.callMethod(v, Reflect.field(v, argDef.name), applied);
-				default:
+				case SubDispatch:
+					Reflect.callMethod(v, Reflect.field(v, argDef.name), [this]);
+				case Message:
+					throw UnknownArgument(arg);
 			}
 		}
 	}

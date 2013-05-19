@@ -7,7 +7,6 @@ class Test {
 	{
 		Dispatch.addDecoder(new TestingDecoder());
 		new Dispatch(Sys.args()).dispatch(new Git());
-		trace(new Git());
 	}
 
 }
@@ -44,6 +43,8 @@ class Git extends CommandLine
 	public function add(d:Dispatch)
 	{
 		//re-dispatch here
+		trace("git add called");
+		d.dispatch(new GitAdd());
 	}
 
 	/**
@@ -154,6 +155,7 @@ class GitAdd extends GitCommand
 
 	public function runDefault(varArgs:Array<String>)
 	{
+		trace("running default with " + varArgs);
 	}
 }
 
