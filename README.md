@@ -87,5 +87,6 @@ You can see more complex examples looking at the samples provided
 As stated above, the mcli library is in public domain
 
 ## Status
-Everything should be working, but it's currently beta. After some tests it will get a major release. You may use github's issues list to add feature requests and bug reports.
+Everything should be working, but it's currently in beta status.
+After some tests it will get a major release. You may use github's issues list to add feature requests and bug reports.
 Pull requests for new features are welcome, provided it won't hurt backwards compatibility and existing features and follow mcli's minimalist approach
