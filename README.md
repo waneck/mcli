@@ -1,7 +1,7 @@
 #mcli
 
 ## Description
-mcli is a simple, opionated and type-safe way to create command line interfaces.
+mcli is a simple, opinionated and type-safe way to create command line interfaces.
 It will map a class definition into expected command-line arguments in an intuitive and straight-forward way.
 
 ## Features
