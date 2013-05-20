@@ -19,7 +19,7 @@ import mcli.Dispatch;
 
 /**
   Say hello.
-	Example inspired by ruby's `executable` lib example
+	Example inspired by ruby's "executable" lib example
 **/
 class HelloWorld extends mcli.CommandLine
 {
