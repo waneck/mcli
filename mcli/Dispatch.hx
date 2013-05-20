@@ -3,7 +3,9 @@ import mcli.DispatchError;
 import mcli.internal.Data;
 #if macro
 import haxe.macro.Expr;
-import haxe.macro.*;
+import haxe.macro.Type in MType;
+import haxe.macro.Context;
+import haxe.macro.TypeTools;
 #end
 using mcli.internal.Tools;
 
@@ -111,7 +113,7 @@ class Dispatch
 		var prefix = "-";
 		if (arg.kind == SubDispatch || arg.kind == Message)
 			prefix = "";
-		return versions.map(function(v) return prefix + prefix + v.toDashSep());
+		return versions.map(function(v) return (v.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep());
 	}
 
 	private static function getPostfix(arg:Argument)
