@@ -39,14 +39,6 @@ class Tools
 				switch(ln.fastCodeAt(i))
 				{
 				case ' '.code, '\t'.code, '*'.code: i++;
-				case '['.code if (curTag == null):
-					var tagP = ln.indexOf(']');
-					if (tagP < 0)
-						break;
-					var tag = ln.substr(i+1, tagP - (i+1));
-					ret.push({ tag: tag, contents: ln.substr(tagP + 1) });
-					i = len;
-					break;
 				case '@'.code: //found a tag
 					var t = txt.toString();
 					txt = new StringBuf();
