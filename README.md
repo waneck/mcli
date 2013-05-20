@@ -14,11 +14,9 @@ It will map a class definition into expected command-line arguments in an intuit
 
 ## Example
 
-`
-import mcli.Dispatch;
-
+```
 /**
-  Say hello.
+	Say hello.
 	Example inspired by ruby's "executable" lib example
 **/
 class HelloWorld extends mcli.CommandLine
@@ -52,17 +50,17 @@ class HelloWorld extends mcli.CommandLine
 	}
 
 }
-`
+```
 
 Compiling this with
-`
+```
 -neko hello.n
 -main HelloWorld
 -lib mcli
-`
+```
 
 Will render the following program:
-`
+```
 $ neko hello
 Hello, World!
 $ neko hello Caue
@@ -71,17 +69,17 @@ $ neko hello --loud Caue
 HELLO, CAUE!
 $ neko hello Caue --loud
 HELLO, CAUE!
-`
+```
 
 You can also generate help for commands:
-`
+```
 $ neko hello --help
 Say hello. 
 Example inspired by ruby's `executable` lib example
 
   --loud     Say it in uppercase?
   --help     Show this message.
-`
+```
 
 You can see more complex examples looking at the samples provided
 
