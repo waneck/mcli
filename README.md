@@ -32,6 +32,7 @@ class HelloWorld extends mcli.CommandLine
 	public function help()
 	{
 		Sys.println(this.showUsage());
+		Sys.exit(0);
 	}
 
 	public function runDefault(?name:String)
