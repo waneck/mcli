@@ -1,10 +1,6 @@
 package ;
 import mcli.Dispatch;
 
-/**
- * ...
- * @author waneck
- */
 class Test
 {
 
