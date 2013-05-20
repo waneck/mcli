@@ -21,11 +21,12 @@ class Test
 }
 
 //replicating http://commons.apache.org/proper/commons-cli/usage.html
+/**
+	a Java based make tool
+**/
 class Ant extends mcli.CommandLine
 {
 	/**
-		[region] Options:
-
 		be extra quiet
 	**/
 	public var quiet:Bool = false;
@@ -117,7 +118,7 @@ class Ant extends mcli.CommandLine
 
 	}
 
-	public function run()
+	public function runDefault(varArgs:Array<String>)
 	{
 
 	}
