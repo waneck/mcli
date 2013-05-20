@@ -459,8 +459,6 @@ class Dispatch
 			} else if (!defaultRan) switch(argDef.kind) {
 				case Function(args,_) if (!args.exists(function(a) return !a.opt)):
 					runArgument("--run-default", argDef); //only run default if compatible
-					if (args.length != 0)
-						throw TooManyArguments;
 				default:
 			}
 		}
