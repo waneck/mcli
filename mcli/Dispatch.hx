@@ -283,6 +283,8 @@ class Dispatch
 						errln('ERROR: Unrecognized format for $t. Passed $p');
 					case DecoderNotFound(t):
 						errln('[mcli error] No Decoder found for type $t');
+					case MissingOptionArgument(opt,name) if (opt == "--run-default"):
+						errln('ERROR: The argument $name is required');
 					case MissingOptionArgument(opt,name):
 						name = name != null ? " (" + name + ")" : "";
 						errln('ERROR: The option $opt requires an argument$name, but no argument was passed');
@@ -369,6 +371,7 @@ class Dispatch
 					didCall = true;
 					var applied = [];
 					var toAdd = [];
+					var origArg = arg;
 					for (fa in fargs)
 					{
 						arg = args.pop();
@@ -377,6 +380,8 @@ class Dispatch
 							toAdd.push(arg);
 							arg = args.pop();
 						}
+						if (arg == null)
+							throw MissingOptionArgument(origArg, fa.name);
 						applied.push(decode(arg, fa.t));
 					}
 					if (varArg != null)
