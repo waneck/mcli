@@ -8,6 +8,7 @@ import haxe.macro.Context;
 import haxe.macro.TypeTools;
 #end
 using mcli.internal.Tools;
+using Lambda;
 
 class Dispatch
 {
@@ -438,12 +439,20 @@ class Dispatch
 			runArgument(arg, argDef);
 		}
 
-		if (!didCall)
+		var argDef = names.get("--run-default");
+		if (argDef == null)
 		{
-			var argDef = names.get("--run-default");
-			if (argDef == null)
+			if (!didCall)
 				throw MissingArgument;
-			runArgument("--run-default", argDef);
+		} else {
+			if (!didCall)
+			{
+				runArgument("--run-default", argDef);
+			} else switch(argDef.kind) {
+				case Function(args,_) if (!args.exists(function(a) return !a.opt)):
+					runArgument("--run-default", argDef); //only run default if compatible
+				default:
+			}
 		}
 
 		for (d in delays) d();
