@@ -306,7 +306,7 @@ class Dispatch
 			for (a in getAliases(arg))
 				names.set(a, arg);
 
-		var didCall = false;
+		var didCall = false, defaultRan = false;
 		var delays = [];
 		function runArgument(arg:String, argDef:Argument)
 		{
@@ -395,8 +395,6 @@ class Dispatch
 						}
 						applied.push(va);
 					}
-					if (argDef.name == "runDefault" && args.length != 0)
-						throw TooManyArguments;
 					delays.push(function() Reflect.callMethod(v, Reflect.field(v, argDef.name), applied));
 					if (toAdd.length != 0)
 					{
@@ -421,8 +419,13 @@ class Dispatch
 			{
 				if (arg.charCodeAt(0) != '-'.code)
 				{
-					argDef = names.get("--run-default");
-					args.push(arg);
+					if (!defaultRan)
+					{
+						argDef = names.get("--run-default");
+						if (argDef != null)
+							defaultRan = true;
+						args.push(arg);
+					}
 				} else if (arg.length > 2 && arg.charCodeAt(1) != '-'.code) {
 					var a = arg.substr(1).split('').map(function(v) return '-' + v);
 					a.reverse();
@@ -448,9 +451,11 @@ class Dispatch
 			if (!didCall)
 			{
 				runArgument("--run-default", argDef);
-			} else switch(argDef.kind) {
+			} else if (!defaultRan) switch(argDef.kind) {
 				case Function(args,_) if (!args.exists(function(a) return !a.opt)):
 					runArgument("--run-default", argDef); //only run default if compatible
+					if (args.length != 0)
+						throw TooManyArguments;
 				default:
 			}
 		}
