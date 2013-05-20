@@ -380,7 +380,7 @@ class Dispatch
 							toAdd.push(arg);
 							arg = args.pop();
 						}
-						if (arg == null)
+						if (arg == null && !fa.opt)
 							throw MissingOptionArgument(origArg, fa.name);
 						applied.push(decode(arg, fa.t));
 					}
