@@ -11,6 +11,7 @@ class Test {
 
 }
 
+//this will demonstrate how to add a custom type to be decoded
 class Testing
 {
 	public var str:String;
@@ -183,11 +184,9 @@ class GitAdd extends GitCommand
 	**/
 	public var ignoreMissing:Bool;
 
-	public function runDefault(varArgs:Array<String>)
+	public function runDefault(arg1:String, varArgs:Array<String>)
 	{
 		trace("running default with " + varArgs);
-		if (varArgs.length == 0)
-			throw mcli.DispatchError.MissingArgument;
 	}
 }
 
