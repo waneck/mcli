@@ -1,14 +1,9 @@
-/**
- * ...
- * @author waneck
- */
 class Test
 {
 
 	public static function main()
 	{
-
-		trace(new Ls());
+		new mcli.Dispatch(Sys.args()).dispatch(new Ls());
 	}
 
 }
@@ -64,4 +59,14 @@ class Ls extends mcli.CommandLine
 		@alias C
 	**/
 	public var columns:Bool;
+
+	public function runDefault()
+	{
+		for (v in Type.getInstanceFields(Ls))
+		{
+			var f = Reflect.field(this,v);
+			if (!Reflect.isFunction(f))
+				trace('$v : $f');
+		}
+	}
 }
