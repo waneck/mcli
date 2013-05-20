@@ -19,7 +19,7 @@ class Macro
 			throw new Error("Invalid number of type parameters for $name. Expected $nargs", p);
 	}
 
-	public static function convertType(t:haxe.macro.Type, pos:Position):mcli.internal.Type
+	public static function convertType(t:haxe.macro.Type, pos:Position):mcli.internal.CType
 	{
 		return switch(Context.follow(t))
 		{
@@ -77,7 +77,7 @@ class Macro
 		if (cls.params.length != 0)
 			throw new Error("Unsupported type parameters for Command Line macros", cls.pos);
 
-		function convert(t:haxe.macro.Type, pos:Position):mcli.internal.Type
+		function convert(t:haxe.macro.Type, pos:Position):mcli.internal.CType
 		{
 			var ret = Macro.convertType(t,pos);
 			registerUse(ret, pos, clsname);
@@ -352,7 +352,30 @@ class Macro
 					//check if the declared type is declared and conforms to the Decoder typedef
 					for (bt in btypes)
 					{
-						if ( (getName(bt) == k || getName(bt) == k + "Decoder") && conformsToDecoder(bt))
+						if (getName(bt) == k)
+						{
+							switch(bt)
+							{
+								case TEnum(e,_):
+									var e = e.get();
+									var simple = true;
+									for (c in e.constructs)
+									{
+										switch(Context.follow(c.type))
+										{
+											case TEnum(_,_):
+											default:
+												simple = false;
+												break;
+										}
+									}
+									if (simple)
+										t.found = true;
+								default:
+							}
+						}
+
+						if ( !t.found && (getName(bt) == k || getName(bt) == k + "Decoder") && conformsToDecoder(bt))
 						{
 							t.found = true;
 						}

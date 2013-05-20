@@ -29,9 +29,16 @@ class Complex extends mcli.CommandLine
 	**/
 	public var defines:Map<String,String> = new Map();
 
+	/**
+		an enum
+		@alias e
+	**/
+	public var anEnum:SimpleEnum;
+
 	public function runDefault()
 	{
-		trace([simpleFlag, typeVar, defines.toString()]);
+		trace(anEnum);
+		trace([simpleFlag, typeVar, defines.toString(), anEnum]);
 		defines.set("a", "b");
 		trace(defines.get('a'));
 	}
@@ -44,4 +51,11 @@ class Complex extends mcli.CommandLine
 	{
 		Sys.println(this.showUsage());
 	}
+}
+
+enum SimpleEnum
+{
+	ValueOne;
+	Two;
+	Three;
 }

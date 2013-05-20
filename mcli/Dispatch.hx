@@ -210,6 +210,36 @@ class Dispatch
 				a;
 			default:
 				var d = decoders != null ? decoders.get(type) : null;
+				if (d == null)
+				{
+					var dt = Type.resolveClass(type);
+					if (dt != null && Reflect.hasField(dt, "fromString"))
+						d = cast dt;
+				}
+				if (d == null)
+				{
+					var dt2 = Type.resolveClass(type + "Decoder");
+					if (dt2 != null && Reflect.hasField(dt2, "fromString"))
+						d = cast dt2;
+				}
+				if (d == null)
+				{
+					var e = Type.resolveEnum(type);
+					if (e != null)
+					{
+						var all = Type.allEnums(e);
+						if (all.length > 0 && all.length == Type.getEnumConstructs(e).length)
+						{
+							for (v in all)
+							{
+								if (a == Std.string(v).toDashSep())
+									return v;
+							}
+							throw ArgumentFormatError(type,a);
+						}
+					}
+				}
+
 				if (d == null) throw DecoderNotFound(type);
 				d.fromString(a);
 		};
@@ -346,8 +376,8 @@ class Dispatch
 					}
 					if (n == null)
 						throw MissingOptionArgument(arg);
-					var v = decode(n, t);
-					Reflect.setProperty(v, argDef.name, v);
+					var val = decode(n, t);
+					Reflect.setProperty(v, argDef.name, val);
 					if (toAdd.length > 0)
 					{
 						toAdd.reverse();
