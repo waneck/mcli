@@ -87,6 +87,13 @@ class Macro
 		var fields = Context.getBuildFields();
 		var ctor = null, setters = [];
 		var arguments = [];
+
+		if (cls.doc != null)
+		{
+			var parsed = Tools.parseComments(cls.doc);
+			if (parsed[0] != null && parsed[0].tag == null)
+			arguments.push(Context.makeExpr({ name:"", command:"", aliases:null, description:parsed[0].contents + '\n', kind:mcli.internal.Data.Kind.Message }, cls.pos));
+		}
 		for (f in fields)
 		{
 			var name = f.name;
@@ -152,6 +159,7 @@ class Macro
 			var description = null, aliases = [], command = name, key = null, value = null;
 			for (p in parsed)
 			{
+				p.contents = StringTools.replace(p.contents, "\n", "");
 				if (p.tag == null)
 				{
 					description = p.contents;

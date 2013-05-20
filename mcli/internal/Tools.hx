@@ -74,6 +74,7 @@ class Tools
 				txt.add(ln.substr(i).replace("\r", "").trim());
 				txt.addChar(' '.code);
 			}
+			txt.addChar('\n'.code);
 		}
 
 		var t = txt.toString().trim();

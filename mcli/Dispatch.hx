@@ -111,7 +111,7 @@ class Dispatch
 		var prefix = "-";
 		if (arg.kind == SubDispatch || arg.kind == Message)
 			prefix = "";
-		return versions.map(function(v) return (v.length == 1 || versions.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep());
+		return versions.map(function(v) return prefix + prefix + v.toDashSep());
 	}
 
 	private static function getPostfix(arg:Argument)
@@ -305,29 +305,8 @@ class Dispatch
 
 		var didCall = false;
 		var delays = [];
-		while (args.length > 0)
+		function runArgument(arg:String, argDef:Argument)
 		{
-			var arg = args.pop();
-			var argDef = names.get(arg);
-			if (argDef == null)
-			{
-				if (arg.charCodeAt(0) != '-'.code)
-				{
-					argDef = names.get("-run-default");
-					args.push(arg);
-				} else if (arg.length > 2 && arg.charCodeAt(1) != '-'.code) {
-					var a = arg.substr(1).split('').map(function(v) return '-' + v);
-					a.reverse();
-					args = args.concat(a);
-					continue;
-				}
-			}
-			if (argDef == null)
-				if (arg != null)
-					throw UnknownArgument(arg);
-				else
-					throw MissingArgument;
-
 			switch(argDef.kind)
 			{
 				case Flag:
@@ -431,24 +410,40 @@ class Dispatch
 			}
 		}
 
-		for (d in delays) d();
+		while (args.length > 0)
+		{
+			var arg = args.pop();
+			var argDef = names.get(arg);
+			if (argDef == null)
+			{
+				if (arg.charCodeAt(0) != '-'.code)
+				{
+					argDef = names.get("--run-default");
+					args.push(arg);
+				} else if (arg.length > 2 && arg.charCodeAt(1) != '-'.code) {
+					var a = arg.substr(1).split('').map(function(v) return '-' + v);
+					a.reverse();
+					args = args.concat(a);
+					continue;
+				}
+			}
+			if (argDef == null)
+				if (arg != null)
+					throw UnknownArgument(arg);
+				else
+					throw MissingArgument;
+
+			runArgument(arg, argDef);
+		}
 
 		if (!didCall)
 		{
-			var argDef = names.get("-run-default");
+			var argDef = names.get("--run-default");
 			if (argDef == null)
 				throw MissingArgument;
-			switch(argDef.kind)
-			{
-				case Function([],va):
-					var v:Dynamic = v;
-					if (va == null)
-						v.runDefault();
-					else
-						v.runDefault([]);
-				default:
-					throw MissingArgument;
-			}
+			runArgument("--run-default", argDef);
 		}
+
+		for (d in delays) d();
 	}
 }

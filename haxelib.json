@@ -1,0 +1,10 @@
+{
+    "name":         "mcli",
+    "url":          "https://github.com/waneck/mcli",
+    "license":      "Public",
+    "tags":         ["cross","cli"],
+    "description":  "A simple command-line object mapper. See more at https://github.com/waneck/mcli",
+    "version":      "0.1.0-beta",
+    "releasenote":  "First release on new haxelib, still largely untested but functional.",
+    "contributors": ["waneck"],
+}
