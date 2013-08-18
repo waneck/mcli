@@ -369,7 +369,7 @@ class Dispatch
 					}
 				case Function(fargs,varArg):
 					didCall = true;
-					var applied = [];
+					var applied:Array<Dynamic> = [];
 					var toAdd = [];
 					var origArg = arg;
 					for (fa in fargs)
