@@ -448,7 +448,6 @@ class Dispatch
 			if (argDef == null)
 				if (arg != null) {
 					if (didCall == false) {
-						trace ("did not call something");
 						throw UnknownArgument(arg);
 					}
 					else continue;
