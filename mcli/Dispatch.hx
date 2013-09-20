@@ -248,7 +248,7 @@ class Dispatch
 		};
 	}
 
-	private var args:Array<String>;
+	public var args(default,null):Array<String>;
 
 	public function new(args)
 	{
@@ -278,7 +278,7 @@ class Dispatch
 				switch(e)
 				{
 					case UnknownArgument(a):
-						errln('ERROR: Unkown argument: $a');
+						errln('ERROR: Unknown argument: $a');
 					case ArgumentFormatError(t,p):
 						errln('ERROR: Unrecognized format for $t. Passed $p');
 					case DecoderNotFound(t):
@@ -287,7 +287,7 @@ class Dispatch
 						errln('ERROR: The argument $name is required');
 					case MissingOptionArgument(opt,name):
 						name = name != null ? " (" + name + ")" : "";
-						errln('ERROR: The option $opt requires an argument$name, but no argument was passed');
+						errln('ERROR: The option $opt requires an argument $name, but no argument was passed');
 					case MissingArgument:
 						errln('ERROR: Missing arguments');
 					case TooManyArguments:
@@ -305,7 +305,7 @@ class Dispatch
 		var defs = v.getArguments();
 		var names = new Map();
 		for (arg in defs)
-			for (a in getAliases(arg))
+			for (a in getAliases(arg)) 
 				names.set(a, arg);
 
 		var didCall = false, defaultRan = false;
@@ -416,6 +416,13 @@ class Dispatch
 			}
 		}
 
+		function getDefaultAlias() {
+			return
+				if (names.exists("--run-default")) "--run-default";
+				else if (names.exists("run-default")) "run-default";
+				else "";
+		}
+
 		while (args.length > 0)
 		{
 			var arg = args.pop();
@@ -426,7 +433,7 @@ class Dispatch
 				{
 					if (!defaultRan)
 					{
-						argDef = names.get("--run-default");
+						argDef = names.get(getDefaultAlias());
 						if (argDef != null)
 							defaultRan = true;
 						args.push(arg);
@@ -439,15 +446,21 @@ class Dispatch
 				}
 			}
 			if (argDef == null)
-				if (arg != null)
-					throw UnknownArgument(arg);
+				if (arg != null) {
+					if (didCall == false) {
+						trace ("did not call something");
+						throw UnknownArgument(arg);
+					}
+					else continue;
+				}
 				else
 					throw MissingArgument;
 
 			runArgument(arg, argDef);
 		}
 
-		var argDef = names.get("--run-default");
+		var defaultAlias = getDefaultAlias();
+		var argDef = names.get(defaultAlias);
 		if (argDef == null)
 		{
 			if (!didCall)
@@ -455,10 +468,10 @@ class Dispatch
 		} else {
 			if (!didCall)
 			{
-				runArgument("--run-default", argDef);
+				runArgument(defaultAlias, argDef);
 			} else if (!defaultRan) switch(argDef.kind) {
 				case Function(args,_) if (!args.exists(function(a) return !a.opt)):
-					runArgument("--run-default", argDef); //only run default if compatible
+					runArgument(defaultAlias, argDef); //only run default if compatible
 				default:
 			}
 		}
