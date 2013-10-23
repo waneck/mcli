@@ -317,7 +317,7 @@ class Dispatch
 				case Flag:
 					Reflect.setProperty(v, argDef.name, true);
 				case VarHash(key,val,arr):
-					var map:Map<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
+					var map:Map.IMap<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
 					var n = args.pop();
 					var toAdd = [];
 					while(n != null && n.charCodeAt(0) == '-'.code)
