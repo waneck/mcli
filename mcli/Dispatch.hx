@@ -311,7 +311,16 @@ class Dispatch
 #if sys
 		Sys.stderr().writeString(s + "\n");
 #else
-		trace(s);
+		haxe.Log.trace(s,null);
+#end
+	}
+
+	private function println(s:String)
+	{
+#if sys
+		Sys.println(s);
+#else
+		haxe.Log.trace(s,null);
 #end
 	}
 
@@ -343,7 +352,7 @@ class Dispatch
 					case TooManyArguments:
 						errln("ERROR: Too many arguments");
 				}
-				errln(v.showUsage());
+				println(v.showUsage());
 #if sys
 				Sys.exit(1);
 #end
