@@ -18,8 +18,10 @@ class Dispatch
 		[argSize] maximum argument string length
 		[screenSize] maxium characters until a line break should be forced
 	**/
-	public static function argToString(arg:Argument, argSize=30, screenSize=80)
+	public static function argToString(arg:Argument, argSize=30, ?screenSize)
 	{
+		if (screenSize == null)
+			screenSize = getScreenSize();
 		var postfix = getPostfix(arg);
 		var versions = getAliases(arg);
 
@@ -47,19 +49,26 @@ class Dispatch
 		if (arg.description != null)
 			ret.add(arg.description);
 		var consolidated = ret.toString();
+		var inNewline = false;
 		if (consolidated.length > screenSize)
 		{
 			ret = new StringBuf();
 			var c = consolidated.split(" "), ccount = 0;
 			for (word in c)
 			{
+				if (inNewline && word == '')
+					continue;
+				else
+					inNewline = false;
 				ccount += word.length + 1;
 				if (ccount >= screenSize)
 				{
 					ret.addChar("\n".code);
-					for (i in 0...(argSize + 5))
-					ret.add(" ");
-					ccount = argSize + 5;
+					for (i in 0...(argSize + 7))
+						ret.add(" ");
+					ccount = word.length + 1 + argSize + 8;
+					inNewline = true;
+					if (word == '') continue;
 				}
 				ret.add(word);
 				ret.add(" ");
@@ -74,8 +83,10 @@ class Dispatch
 		With an argument definition array, it formats to show the standard usage help screen
 		[screenSize] maximum number of characters before a line break is forced
 	**/
-	public static function showUsageOf(args:Array<Argument>, screenSize=80):String
+	public static function showUsageOf(args:Array<Argument>, ?screenSize):String
 	{
+		if (screenSize == null)
+			screenSize = getScreenSize();
 		var maxSize = 0;
 		for (arg in args)
 		{
@@ -91,7 +102,7 @@ class Dispatch
 				maxSize = size;
 		}
 
-		if (maxSize > 30) maxSize = 30;
+		if (maxSize > (screenSize / 2.5)) maxSize = Std.int(screenSize / 2.5);
 		var buf = new StringBuf();
 		for (arg in args)
 		{
@@ -104,6 +115,45 @@ class Dispatch
 			}
 		}
 		return buf.toString();
+	}
+
+	private static function getScreenSize(defaultSize=80)
+	{
+#if sys
+		var cols:Null<Int> = null;
+		cols = Std.parseInt(Sys.getEnv("COLUNNS"));
+		if (cols != null)
+			return cols;
+		try
+		{
+			var proc = new sys.io.Process('resize',[]);
+			var i = proc.stdout;
+			try
+			{
+				while(true)
+				{
+					var ln = StringTools.trim(i.readLine());
+					if (StringTools.startsWith(ln,"COLUMNS="))
+					{
+						cols = Std.parseInt(ln.split('=')[1]);
+						break;
+					}
+				}
+			}
+			catch(e:haxe.io.Eof) {
+			}
+			proc.close();
+		}
+		catch(e:Dynamic)
+		{
+		}
+		if (cols == null)
+			return defaultSize;
+		else
+			return cols;
+#else
+		return defaultSize;
+#end
 	}
 
 	private static function getAliases(arg:Argument)
@@ -126,9 +176,9 @@ class Dispatch
 			case Var(_):
 				" <" + arg.name + ">";
 			case Function(args,vargs):
-				var postfix = " ";
+				var postfix = "";
 				for (arg in args)
-					postfix += (arg.opt ? "[" : "<") + arg.name.toDashSep() + (arg.opt ? "]" : ">");
+					postfix += (arg.opt ? " [" : " <") + arg.name.toDashSep() + (arg.opt ? "]" : ">");
 				if (vargs != null)
 					postfix += " [arg1 [arg2 ...[argN]]]";
 				postfix;
@@ -305,7 +355,7 @@ class Dispatch
 		var defs = v.getArguments();
 		var names = new Map();
 		for (arg in defs)
-			for (a in getAliases(arg)) 
+			for (a in getAliases(arg))
 				names.set(a, arg);
 
 		var didCall = false, defaultRan = false;
