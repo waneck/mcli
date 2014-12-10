@@ -10,7 +10,7 @@ import haxe.macro.TypeTools;
 using mcli.internal.Tools;
 using Lambda;
 
-class Dispatch
+@:access(mcli.CommandLine) class Dispatch
 {
 
 	/**
@@ -490,7 +490,7 @@ class Dispatch
 			{
 				if (arg.charCodeAt(0) != '-'.code)
 				{
-					if (!defaultRan)
+					if (!defaultRan && !v._preventDefault)
 					{
 						argDef = names.get(getDefaultAlias());
 						if (argDef != null)
@@ -519,6 +519,8 @@ class Dispatch
 
 		var defaultAlias = getDefaultAlias();
 		var argDef = names.get(defaultAlias);
+
+		for (d in delays) d();
 		if (argDef == null)
 		{
 			if (!didCall)
@@ -527,13 +529,11 @@ class Dispatch
 			if (!didCall)
 			{
 				runArgument(defaultAlias, argDef);
-			} else if (!defaultRan) switch(argDef.kind) {
+			} else if (!defaultRan && !v._preventDefault) switch(argDef.kind) {
 				case Function(args,_) if (!args.exists(function(a) return !a.opt)):
 					runArgument(defaultAlias, argDef); //only run default if compatible
 				default:
 			}
 		}
-
-		for (d in delays) d();
 	}
 }

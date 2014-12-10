@@ -3,6 +3,8 @@ package mcli;
 @:autoBuild(mcli.internal.Macro.build())
 class CommandLine
 {
+	private var _preventDefault:Bool = false;
+
 	public function new()
 	{
 	}
@@ -13,6 +15,14 @@ class CommandLine
 	public function getArguments():Array<mcli.internal.Data.Argument>
 	{
 		return [];
+	}
+
+	/**
+		Do not run default (`runDefault`)
+	 **/
+	public function preventDefault()
+	{
+		this._preventDefault = true;
 	}
 
 	public function showUsage():String
