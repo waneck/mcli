@@ -324,6 +324,19 @@ using Lambda;
 #end
 	}
 
+	private static function isArgument(str:String)
+	{
+		if (str.charCodeAt(0) == '-'.code)
+		{
+			var code = str.charCodeAt(1);
+			if (code >= '0'.code && code <= '9'.code)
+				return false;
+			else
+				return true;
+		}
+		return false;
+	}
+
 	public function dispatch(v:mcli.CommandLine, handleExceptions = true):Void
 	{
 		if (handleExceptions)
@@ -379,7 +392,7 @@ using Lambda;
 					var map:Map.IMap<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
 					var n = args.pop();
 					var toAdd = [];
-					while(n != null && n.charCodeAt(0) == '-'.code)
+					while(n != null && isArgument(n))
 					{
 						toAdd.push(n);
 						n = args.pop();
@@ -412,7 +425,7 @@ using Lambda;
 				case Var(t):
 					var n = args.pop();
 					var toAdd = [];
-					while(n != null && n.charCodeAt(0) == '-'.code)
+					while(n != null && isArgument(n))
 					{
 						toAdd.push(n);
 						n = args.pop();
@@ -434,7 +447,7 @@ using Lambda;
 					for (fa in fargs)
 					{
 						arg = args.pop();
-						while (arg != null && arg.charCodeAt(0) == '-'.code)
+						while (arg != null && isArgument(arg))
 						{
 							toAdd.push(arg);
 							arg = args.pop();
@@ -449,7 +462,7 @@ using Lambda;
 						while (args.length > 0)
 						{
 							var arg = args.pop();
-							if (arg.charCodeAt(0) == '-'.code)
+							if (isArgument(arg))
 							{
 								args.push(arg);
 								break;
@@ -488,7 +501,7 @@ using Lambda;
 			var argDef = names.get(arg);
 			if (argDef == null)
 			{
-				if (arg.charCodeAt(0) != '-'.code)
+				if (!isArgument(arg))
 				{
 					if (!defaultRan && !v._preventDefault)
 					{
