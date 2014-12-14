@@ -2,7 +2,9 @@
 -lib utest
 -lib mcli
 -main Test
+-D travis
 
--python bin/py.py
+-js bin/js.js
+#-python bin/py.py
 #-php bin/php
--cmd python3 bin/py.py
+#-cmd python3 bin/py.py
