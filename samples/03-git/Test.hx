@@ -184,9 +184,9 @@ class GitAdd extends GitCommand
 	**/
 	public var ignoreMissing:Bool;
 
-	public function runDefault(arg1:String, varArgs:Array<String>)
+	public function runDefault(arg1:String)
 	{
-		trace("running default with " + varArgs);
+		trace(arg1);
 	}
 }
 

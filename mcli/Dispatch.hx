@@ -299,11 +299,13 @@ using Lambda;
 	}
 
 	public var args(default,null):Array<String>;
+	var depth:Int;
 
 	public function new(args)
 	{
 		this.args = args.copy();
 		this.args.reverse();
+		this.depth = 0;
 	}
 
 	private function errln(s:String)
@@ -339,11 +341,36 @@ using Lambda;
 
 	public function dispatch(v:mcli.CommandLine, handleExceptions = true):Void
 	{
+		this.depth++;
+		try
+		{
+			_dispatch(v,handleExceptions);
+			this.depth--;
+		}
+		catch(e:Dynamic)
+		{
+			this.depth--;
+#if cpp
+			cpp.Lib.rethrow(e);
+#elseif neko
+			neko.Lib.rethrow(e);
+#elseif java
+			java.Lib.rethrow(e);
+#elseif cs
+			cs.Lib.rethrow(e);
+#else
+			throw e;
+#end
+		}
+	}
+
+	private function _dispatch(v:mcli.CommandLine, handleExceptions:Bool):Void
+	{
 		if (handleExceptions)
 		{
 			try
 			{
-				dispatch(v,false);
+				_dispatch(v,false);
 			}
 			catch(e:DispatchError)
 			{
@@ -519,10 +546,13 @@ using Lambda;
 			}
 			if (argDef == null)
 				if (arg != null) {
-					if (didCall == false) {
+					if (didCall == false || depth == 1)
+					{
 						throw UnknownArgument(arg);
+					} else {
+						args.push(arg);
+						break;
 					}
-					else continue;
 				}
 				else
 					throw MissingArgument;
