@@ -3,4 +3,5 @@
 -lib mcli
 -main Test
 
---interp
+-php bin/php
+-cmd php bin/php/index.php

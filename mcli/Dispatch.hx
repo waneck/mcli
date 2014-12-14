@@ -164,7 +164,7 @@ using Lambda;
 		var prefix = "-";
 		if (arg.kind == SubDispatch || arg.kind == Message)
 			prefix = "";
-		return versions.map(function(v) return (v.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep());
+		return [ for (v in versions) (v.length == 1) ? prefix + v.toDashSep() : prefix + prefix + v.toDashSep() ];
 	}
 
 	private static function getPostfix(arg:Argument)
