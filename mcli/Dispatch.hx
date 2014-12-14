@@ -301,7 +301,7 @@ using Lambda;
 	public var args(default,null):Array<String>;
 	var depth:Int;
 
-	public function new(args)
+	public function new(args:Array<String>)
 	{
 		this.args = args.copy();
 		this.args.reverse();
