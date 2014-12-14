@@ -303,8 +303,11 @@ class Macro
 					true;
 				else if (c.get().superClass == null)
 					false;
-				else
-					isDispatch(TInst(c.get().superClass.t,null));
+				else {
+					var sc = c.get().superClass.t;
+					var dyn = Context.getType('Dynamic');
+					isDispatch(TInst(c.get().superClass.t,[ for (param in sc.get().params) dyn ]));
+				}
 			default: false;
 		}
 	}

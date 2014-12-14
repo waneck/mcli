@@ -39,8 +39,8 @@ env:
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - env: TARGET=python
+  # allow_failures:
+    # - env: TARGET=python
 
 before_install: # clone travis-hx repo
   - travis_retry git clone --depth=50 --branch=master git://github.com/waneck/travis-hx.git ~/travis-hx

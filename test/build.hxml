@@ -3,5 +3,6 @@
 -lib mcli
 -main Test
 
--php bin/php
--cmd php bin/php/index.php
+-python bin/py.py
+#-php bin/php
+-cmd python3 bin/py.py
