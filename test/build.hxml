@@ -1,0 +1,6 @@
+-cp src
+-lib utest
+-lib mcli
+-main Test
+
+--interp

@@ -199,7 +199,7 @@ class Macro
 					var args = args.copy();
 					var last = args.pop();
 					var varArg = null;
-					if (last != null && last.name == "varArgs")
+					if (last != null && (last.name == "varArgs" || last.name == "rest"))
 					{
 						switch(Context.follow(last.t))
 						{

@@ -331,7 +331,7 @@ using Lambda;
 		if (str.charCodeAt(0) == '-'.code)
 		{
 			var code = str.charCodeAt(1);
-			if (code >= '0'.code && code <= '9'.code)
+			if (code >= '0'.code && code <= '9'.code || code == '.'.code)
 				return false;
 			else
 				return true;
@@ -390,7 +390,7 @@ using Lambda;
 					case MissingArgument:
 						errln('ERROR: Missing arguments');
 					case TooManyArguments:
-						errln("ERROR: Too many arguments");
+						errln('ERROR: Too many arguments');
 				}
 				println(v.showUsage());
 #if sys
@@ -546,7 +546,7 @@ using Lambda;
 			}
 			if (argDef == null)
 				if (arg != null) {
-					if (didCall == false || depth == 1)
+					if ( (didCall == false && !v._preventDefault) || depth == 1 )
 					{
 						throw UnknownArgument(arg);
 					} else {
@@ -564,12 +564,13 @@ using Lambda;
 		var argDef = names.get(defaultAlias);
 
 		for (d in delays) d();
+		delays = [];
 		if (argDef == null)
 		{
 			if (!didCall)
 				throw MissingArgument;
 		} else {
-			if (!didCall)
+			if (!didCall && !v._preventDefault)
 			{
 				runArgument(defaultAlias, argDef);
 			} else if (!defaultRan && !v._preventDefault) switch(argDef.kind) {
@@ -578,5 +579,6 @@ using Lambda;
 				default:
 			}
 		}
+		for (d in delays) d();
 	}
 }
