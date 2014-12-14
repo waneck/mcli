@@ -354,8 +354,6 @@ using Lambda;
 			cpp.Lib.rethrow(e);
 #elseif neko
 			neko.Lib.rethrow(e);
-#elseif java
-			java.Lib.rethrow(e);
 #elseif cs
 			cs.Lib.rethrow(e);
 #else
