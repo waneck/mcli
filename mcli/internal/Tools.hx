@@ -34,11 +34,18 @@ class Tools
 		for (ln in c.split("\n"))
 		{
 			var i = 0, len = ln.length;
+			var foundTab = false;
 			while (i < len)
 			{
 				switch(ln.fastCodeAt(i))
 				{
-				case ' '.code, '\t'.code, '*'.code: i++;
+				case '\t'.code:
+					i++;
+					foundTab = true;
+				case ' '.code if(!foundTab || (i > 0 && ln.fastCodeAt(i-1) == '*'.code)):
+					i++;
+				case '*'.code:
+					i++;
 				case '@'.code: //found a tag
 					var t = txt.toString();
 					txt = new StringBuf();
@@ -63,7 +70,7 @@ class Tools
 			}
 			if (i < len)
 			{
-				txt.add(ln.substr(i).replace("\r", "").trim());
+				txt.add(ln.substr(i).replace("\r", "").rtrim());
 				txt.addChar(' '.code);
 			}
 			txt.addChar('\n'.code);
