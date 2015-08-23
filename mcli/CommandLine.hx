@@ -1,6 +1,7 @@
 package mcli;
 
 @:autoBuild(mcli.internal.Macro.build())
+@:keepSub
 class CommandLine
 {
 	private var _preventDefault:Bool = false;
