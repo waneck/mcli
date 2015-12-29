@@ -313,7 +313,7 @@ using Lambda;
 #if sys
 		Sys.stderr().writeString(s + "\n");
 #else
-		haxe.Log.trace(s,null);
+		haxe.Log.trace(s);
 #end
 	}
 
@@ -322,7 +322,7 @@ using Lambda;
 #if sys
 		Sys.println(s);
 #else
-		haxe.Log.trace(s,null);
+		haxe.Log.trace(s);
 #end
 	}
 
