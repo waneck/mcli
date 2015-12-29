@@ -310,7 +310,7 @@ using Lambda;
 
 	private function errln(s:String)
 	{
-#if sys
+#if (sys && !nodejs)
 		Sys.stderr().writeString(s + "\n");
 #else
 		haxe.Log.trace(s,null);
