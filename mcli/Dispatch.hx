@@ -310,7 +310,9 @@ using Lambda;
 
 	private function errln(s:String)
 	{
-#if (sys && !nodejs)
+#if nodejs
+		js.Node.process.stderr.write(s + "\n");
+#elseif sys
 		Sys.stderr().writeString(s + "\n");
 #else
 		haxe.Log.trace(s,null);
@@ -319,7 +321,7 @@ using Lambda;
 
 	private function println(s:String)
 	{
-#if sys
+#if (sys || nodejs)
 		Sys.println(s);
 #else
 		haxe.Log.trace(s,null);
