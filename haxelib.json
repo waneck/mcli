@@ -4,7 +4,7 @@
     "license":      "Public",
     "tags":         ["cross","cli"],
     "description":  "A simple command-line object mapper. See more at https://github.com/waneck/mcli",
-    "version":      "0.1.4",
-    "releasenote":  "Bugfixes",
+    "version":      "0.1.5",
+    "releasenote":  "DCE bugfix",
     "contributors": ["waneck"]
 }
