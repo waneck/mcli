@@ -211,7 +211,7 @@ class Macro
 					} else if (last != null) {
 						args.push(last);
 					}
-					Function(args.map(function(a) return { name: a.name, opt: a.opt, t: convert(a.t, f.pos) }), varArg);
+					Function(args.map(function(a):FunctionArg return { name: a.name, opt: a.opt, t: convert(a.t, f.pos) }), varArg);
 				default:
 					Var( convert(type, f.pos) );
 			};
