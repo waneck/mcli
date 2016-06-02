@@ -242,7 +242,15 @@ class Macro
 					switch(Context.follow(lastCtor.type))
 					{
 						case TFun(_args,_):
-							args = _args.map(function(arg) return { value:null, type:null, opt:arg.opt, name:arg.name });
+							args = _args.map(function(arg) return { 
+								value:null, 
+								type:null, 
+								opt:arg.opt, 
+								name:arg.name 
+								#if (haxe_ver >= 3.3)
+								,meta:null
+								#end
+							});
 							bsuper.push({ expr:ECall(macro super, args.map(function(arg) return { expr:EConst(CIdent(arg.name)), pos:Context.currentPos() })), pos: Context.currentPos() });
 						default: throw "assert";
 					}
