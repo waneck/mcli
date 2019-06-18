@@ -7,6 +7,11 @@ import haxe.macro.Type in MType;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
 #end
+#if haxe4
+import haxe.Constraints.IMap;
+#else
+import Map.IMap;
+#end
 using mcli.internal.Tools;
 using Lambda;
 
@@ -414,7 +419,7 @@ using Lambda;
 				case Flag:
 					Reflect.setProperty(v, argDef.name, true);
 				case VarHash(key,val,arr):
-					var map:Map.IMap<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
+					var map:IMap<Dynamic,Dynamic> = Reflect.getProperty(v, argDef.name);
 					var n = args.pop();
 					var toAdd = [];
 					while(n != null && isArgument(n))

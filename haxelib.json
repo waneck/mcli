@@ -4,7 +4,7 @@
     "license":      "Public",
     "tags":         ["cross","cli"],
     "description":  "A simple command-line object mapper. See more at https://github.com/waneck/mcli",
-    "version":      "0.1.6",
-    "releasenote":  "3.3 update",
+    "version":      "0.1.7",
+    "releasenote":  "Haxe 4 update",
     "contributors": ["waneck"]
 }

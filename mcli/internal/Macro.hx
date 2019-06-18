@@ -63,11 +63,13 @@ class Macro
 		{
 			if (!Context.defined("use_rtti_doc"))
 				throw new Error("mini cli will only work when -D use_rtti_doc is defined", Context.currentPos());
+			#if !haxe4
 			Context.onMacroContextReused(function()
 			{
 				resetContext();
 				return true;
 			});
+			#end
 			resetContext();
 			once = true;
 		}
@@ -182,7 +184,7 @@ class Macro
 
 			var kind = switch(Context.follow(type))
 			{
-				case TAbstract(a,[p1,p2]) if (a.toString() == "Map"):
+				case TAbstract(a,[p1,p2]) if (a.toString() == "Map" || a.toString() == 'haxe.ds.Map'):
 					var arr = arrayType(p2);
 					if (arr != null) p2 = arr;
 					VarHash({ name:key, t:convert(p1, f.pos) }, { name:value, t:convert(p2, f.pos) }, arr != null);
@@ -242,11 +244,11 @@ class Macro
 					switch(Context.follow(lastCtor.type))
 					{
 						case TFun(_args,_):
-							args = _args.map(function(arg) return { 
-								value:null, 
-								type:null, 
-								opt:arg.opt, 
-								name:arg.name 
+							args = _args.map(function(arg) return {
+								value:null,
+								type:null,
+								opt:arg.opt,
+								name:arg.name
 								#if (haxe_ver >= 3.3)
 								,meta:null
 								#end
